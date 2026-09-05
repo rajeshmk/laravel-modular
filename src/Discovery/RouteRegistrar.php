@@ -24,6 +24,9 @@ final readonly class RouteRegistrar
         /** @var array<int, string> $apiMiddleware */
         $apiMiddleware = $this->config->get('modular.routing.api_middleware', ['api']);
 
+        /** @var string|null $apiPrefix */
+        $apiPrefix = $this->config->get('modular.routing.api_prefix', 'api');
+
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasWebRoutes()) {
@@ -31,7 +34,11 @@ final readonly class RouteRegistrar
             }
 
             if ($module->hasApiRoutes()) {
-                Route::middleware($apiMiddleware)->group($module->getApiRoutesPath());
+                $route = Route::middleware($apiMiddleware);
+                if ($apiPrefix !== null && $apiPrefix !== '') {
+                    $route = $route->prefix($apiPrefix);
+                }
+                $route->group($module->getApiRoutesPath());
             }
         }
     }

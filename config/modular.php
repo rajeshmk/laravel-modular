@@ -44,6 +44,7 @@ return [
     'routing' => [
         'web_middleware' => ['web'],
         'api_middleware' => ['api'],
+        'api_prefix' => 'api',
     ],
 
     /*
