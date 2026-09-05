@@ -23,7 +23,7 @@ class ModuleMakeCommand extends GeneratorCommand
         $moduleName = Str::studly($rawName);
         $force = (bool) $this->option('force');
 
-        $modulePath = $this->registry->getModulesPath().DIRECTORY_SEPARATOR.$moduleName;
+        $modulePath = $this->registry->getModulesPath() . DIRECTORY_SEPARATOR . $moduleName;
         $module = new Module(
             name: $moduleName,
             path: $modulePath,

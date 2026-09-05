@@ -30,7 +30,7 @@ class ModularServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/modular.php', 'modular');
+        $this->mergeConfigFrom(__DIR__ . '/../config/modular.php', 'modular');
 
         $this->app->singleton(ModuleRegistry::class, function ($app): ModuleRegistry {
             return new ModuleRegistry($app->make(ConfigRepository::class));
@@ -50,16 +50,17 @@ class ModularServiceProvider extends ServiceProvider
     {
         /** @var ConfigRepository $config */
         $config = $this->app->make(ConfigRepository::class);
+
         /** @var ModuleRegistry $registry */
         $registry = $this->app->make(ModuleRegistry::class);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/modular.php' => config_path('modular.php'),
+                __DIR__ . '/../config/modular.php' => config_path('modular.php'),
             ], 'modular-config');
 
             $this->publishes([
-                __DIR__.'/stubs' => base_path('stubs/modular'),
+                __DIR__ . '/stubs' => base_path('stubs/modular'),
             ], 'modular-stubs');
 
             $this->commands([
@@ -80,7 +81,7 @@ class ModularServiceProvider extends ServiceProvider
 
         // Auto-discover Model Factories
         if ((bool) $config->get('modular.autodiscover.factories', true)) {
-            (new FactoryGuesser)->register($registry->getNamespace());
+            (new FactoryGuesser())->register($registry->getNamespace());
         }
 
         // Auto-discover Module Routes

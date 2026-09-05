@@ -11,7 +11,7 @@ final readonly class FactoryGuesser
 {
     public function register(string $moduleNamespace): void
     {
-        $cleanNamespace = rtrim($moduleNamespace, '\\').'\\';
+        $cleanNamespace = rtrim($moduleNamespace, '\\') . '\\';
 
         Factory::guessFactoryNamesUsing(function (string $modelName) use ($cleanNamespace): string {
             if (Str::startsWith($modelName, $cleanNamespace)) {
@@ -22,7 +22,7 @@ final readonly class FactoryGuesser
                 return "{$cleanNamespace}{$module}\\Database\\Factories\\{$modelBasename}Factory";
             }
 
-            return 'Database\\Factories\\'.class_basename($modelName).'Factory';
+            return 'Database\\Factories\\' . class_basename($modelName) . 'Factory';
         });
     }
 }

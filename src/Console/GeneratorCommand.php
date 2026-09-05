@@ -32,7 +32,7 @@ abstract class GeneratorCommand extends Command
         // Return a virtual module instance pointing to expected location
         return new Module(
             name: Str::studly($name),
-            path: $this->registry->getModulesPath().DIRECTORY_SEPARATOR.Str::studly($name),
+            path: $this->registry->getModulesPath() . DIRECTORY_SEPARATOR . Str::studly($name),
             namespace: $this->registry->getNamespace()
         );
     }
@@ -49,7 +49,7 @@ abstract class GeneratorCommand extends Command
             }
         }
 
-        $defaultPath = __DIR__."/../stubs/{$stubName}.stub";
+        $defaultPath = __DIR__ . "/../stubs/{$stubName}.stub";
 
         if (! file_exists($defaultPath)) {
             throw new FileNotFoundException("Stub file [{$stubName}.stub] not found at [{$defaultPath}].");
@@ -65,7 +65,7 @@ abstract class GeneratorCommand extends Command
     }
 
     /**
-     * @param  array<string, string>  $replacements
+     * @param array<string, string> $replacements
      */
     protected function replacePlaceholders(string $stub, array $replacements): string
     {
@@ -79,7 +79,7 @@ abstract class GeneratorCommand extends Command
     protected function ensureDirectoryExists(string $path): void
     {
         if (! is_dir($path)) {
-            mkdir($path, 0755, true);
+            mkdir($path, 0o755, true);
         }
     }
 

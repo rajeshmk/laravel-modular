@@ -17,7 +17,8 @@ it('caches and clears module discovery manifest', function () {
     $registry = new ModuleRegistry(app('config'));
     expect($registry->isCached())->toBeTrue()
         ->and($registry->all())->toHaveCount(1)
-        ->and($registry->has('Reports'))->toBeTrue();
+        ->and($registry->has('Reports'))->toBeTrue()
+    ;
 
     // Clear cache
     $this->artisan('module:clear')->assertSuccessful();

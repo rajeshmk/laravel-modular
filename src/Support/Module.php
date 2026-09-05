@@ -30,18 +30,18 @@ final readonly class Module
             return $this->path;
         }
 
-        return rtrim($this->path, '/\\').DIRECTORY_SEPARATOR.ltrim($subPath, '/\\');
+        return rtrim($this->path, '/\\') . DIRECTORY_SEPARATOR . ltrim($subPath, '/\\');
     }
 
     public function getNamespace(?string $subNamespace = null): string
     {
-        $base = rtrim($this->namespace, '\\').'\\'.$this->name;
+        $base = rtrim($this->namespace, '\\') . '\\' . $this->name;
 
         if ($subNamespace === null || $subNamespace === '') {
             return $base;
         }
 
-        return $base.'\\'.ltrim($subNamespace, '\\');
+        return $base . '\\' . ltrim($subNamespace, '\\');
     }
 
     public function hasProvider(): bool

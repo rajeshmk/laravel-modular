@@ -76,25 +76,19 @@ final class ModuleRegistry
     public function getCachePath(): string
     {
         /** @var string $path */
-        $path = $this->config->get('modular.cache_path', base_path('bootstrap/cache/modules.php'));
-
-        return $path;
+        return $this->config->get('modular.cache_path', base_path('bootstrap/cache/modules.php'));
     }
 
     public function getModulesPath(): string
     {
         /** @var string $path */
-        $path = $this->config->get('modular.path', base_path('modules'));
-
-        return $path;
+        return $this->config->get('modular.path', base_path('modules'));
     }
 
     public function getNamespace(): string
     {
         /** @var string $namespace */
-        $namespace = $this->config->get('modular.namespace', 'Modules\\');
-
-        return $namespace;
+        return $this->config->get('modular.namespace', 'Modules\\');
     }
 
     /**
@@ -124,7 +118,7 @@ final class ModuleRegistry
             return collect();
         }
 
-        $directories = glob($basePath.'/*', GLOB_ONLYDIR);
+        $directories = glob($basePath . '/*', GLOB_ONLYDIR);
 
         if ($directories === false) {
             return collect();
@@ -141,6 +135,7 @@ final class ModuleRegistry
                 );
             })
             ->sortBy(fn (Module $m): string => $m->getName())
-            ->values();
+            ->values()
+        ;
     }
 }

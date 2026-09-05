@@ -19,7 +19,7 @@ final readonly class MigrationRegistrar
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasMigrations()) {
-                /** @phpstan-ignore-next-line */
+                /* @phpstan-ignore-next-line */
                 if (method_exists($this->app, 'loadMigrationsFrom')) {
                     $this->app->loadMigrationsFrom($module->getMigrationsPath());
                 } elseif ($this->app->bound('migrator')) {

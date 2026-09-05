@@ -25,7 +25,7 @@ class ModuleCacheCommand extends Command
         $cacheDir = dirname($cachePath);
 
         if (! is_dir($cacheDir)) {
-            mkdir($cacheDir, 0755, true);
+            mkdir($cacheDir, 0o755, true);
         }
 
         $modules = $this->registry->toCacheArray();

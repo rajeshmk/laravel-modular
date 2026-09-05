@@ -18,6 +18,7 @@ class MigrationMakeCommand extends GeneratorCommand
     public function handle(): int
     {
         $module = $this->getModule();
+
         /** @var string $rawName */
         $rawName = $this->argument('name');
         $migrationName = Str::snake(trim($rawName));
@@ -36,59 +37,59 @@ class MigrationMakeCommand extends GeneratorCommand
 
         if ($isCreate) {
             $content = <<<PHP
-<?php
+                <?php
 
-declare(strict_types=1);
+                declare(strict_types=1);
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+                use Illuminate\\Database\\Migrations\\Migration;
+                use Illuminate\\Database\\Schema\\Blueprint;
+                use Illuminate\\Support\\Facades\\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
-        Schema::create('{$tableName}', function (Blueprint \$table) {
-            \$table->id();
-            \$table->timestamps();
-        });
-    }
+                return new class extends Migration
+                {
+                    public function up(): void
+                    {
+                        Schema::create('{$tableName}', function (Blueprint \$table) {
+                            \$table->id();
+                            \$table->timestamps();
+                        });
+                    }
 
-    public function down(): void
-    {
-        Schema::dropIfExists('{$tableName}');
-    }
-};
+                    public function down(): void
+                    {
+                        Schema::dropIfExists('{$tableName}');
+                    }
+                };
 
-PHP;
+                PHP;
         } else {
             $content = <<<PHP
-<?php
+                <?php
 
-declare(strict_types=1);
+                declare(strict_types=1);
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+                use Illuminate\\Database\\Migrations\\Migration;
+                use Illuminate\\Database\\Schema\\Blueprint;
+                use Illuminate\\Support\\Facades\\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
-        Schema::table('{$tableName}', function (Blueprint \$table) {
-            //
-        });
-    }
+                return new class extends Migration
+                {
+                    public function up(): void
+                    {
+                        Schema::table('{$tableName}', function (Blueprint \$table) {
+                            //
+                        });
+                    }
 
-    public function down(): void
-    {
-        Schema::table('{$tableName}', function (Blueprint \$table) {
-            //
-        });
-    }
-};
+                    public function down(): void
+                    {
+                        Schema::table('{$tableName}', function (Blueprint \$table) {
+                            //
+                        });
+                    }
+                };
 
-PHP;
+                PHP;
         }
 
         if ($this->writeFile($filePath, $content)) {

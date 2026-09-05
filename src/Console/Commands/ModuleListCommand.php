@@ -25,7 +25,7 @@ class ModuleListCommand extends Command
         $modules = $this->registry->all();
 
         if ($modules->isEmpty()) {
-            $this->components->info('No modules found in ['.$this->registry->getModulesPath().'].');
+            $this->components->info('No modules found in [' . $this->registry->getModulesPath() . '].');
 
             return self::SUCCESS;
         }
@@ -38,7 +38,7 @@ class ModuleListCommand extends Command
                 'name' => $module->getName(),
                 'slug' => $module->getSlug(),
                 'provider' => $module->hasProvider() ? '<info>Registered</info>' : '<comment>None</comment>',
-                'routes' => ($module->hasWebRoutes() ? 'Web ' : '').($module->hasApiRoutes() ? 'API' : '') ?: '<comment>None</comment>',
+                'routes' => ($module->hasWebRoutes() ? 'Web ' : '') . ($module->hasApiRoutes() ? 'API' : '') ?: '<comment>None</comment>',
                 'migrations' => $module->hasMigrations() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'views' => $module->hasViews() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'config' => $module->hasConfig() ? '<info>Yes</info>' : '<comment>None</comment>',

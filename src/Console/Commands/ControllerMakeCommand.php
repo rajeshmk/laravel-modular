@@ -20,6 +20,7 @@ class ControllerMakeCommand extends GeneratorCommand
     public function handle(): int
     {
         $module = $this->getModule();
+
         /** @var string $rawName */
         $rawName = $this->argument('name');
         $className = Str::studly($rawName);

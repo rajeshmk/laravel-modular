@@ -16,18 +16,20 @@ it('discovers modules dynamically from the filesystem', function () {
     expect($modules)->toHaveCount(2)
         ->and($registry->has('Inventory'))->toBeTrue()
         ->and($registry->has('Shipping'))->toBeTrue()
-        ->and($registry->has('NonExistent'))->toBeFalse();
+        ->and($registry->has('NonExistent'))->toBeFalse()
+    ;
 });
 
 it('lists all modules via module:list', function () {
     $this->artisan('module:make', ['name' => 'Sales'])->assertSuccessful();
 
     $this->artisan('module:list')
-        ->assertSuccessful();
+        ->assertSuccessful()
+    ;
 });
 
 it('correctly guesses factory names for modular models', function () {
-    $guesser = new FactoryGuesser;
+    $guesser = new FactoryGuesser();
     $guesser->register('Modules\\');
 
     $guessed = Factory::resolveFactoryName('Modules\\Order\\Models\\Order');
@@ -42,6 +44,6 @@ it('creates and checks migration file for module', function () {
         'name' => 'create_invoices_table',
     ])->assertSuccessful();
 
-    $migrations = glob(__DIR__.'/../tmp/modules/Finance/database/migrations/*_create_invoices_table.php');
+    $migrations = glob(__DIR__ . '/../tmp/modules/Finance/database/migrations/*_create_invoices_table.php');
     expect($migrations)->toHaveCount(1);
 });
