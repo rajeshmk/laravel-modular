@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}};
+
+use Illuminate\Support\ServiceProvider;
+
+class {{module}}ServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        if (file_exists(__DIR__ . '/config/config.php')) {
+            $this->mergeConfigFrom(__DIR__ . '/config/config.php', '{{slug}}');
+        }
+    }
+
+    public function boot(): void
+    {
+        if (is_dir(__DIR__ . '/resources/views')) {
+            $this->loadViewsFrom(__DIR__ . '/resources/views', '{{slug}}');
+        }
+    }
+}

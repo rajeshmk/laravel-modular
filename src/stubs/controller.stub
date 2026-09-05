@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+class {{class}}
+{
+    public function index(Request $request): mixed
+    {
+        return response()->noContent();
+    }
+}

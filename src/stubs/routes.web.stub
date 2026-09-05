@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes for {{module}}
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your module.
+|
+*/
+
+Route::prefix('{{slug}}')->name('{{slug}}.')->group(function () {
+    // Define web routes
+});
