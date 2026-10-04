@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Queries;
+namespace {{namespace}}\{{module}}\Application\Queries;
 
 class {{class}}
 {

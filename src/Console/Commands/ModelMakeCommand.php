@@ -15,7 +15,7 @@ class ModelMakeCommand extends GeneratorCommand
                             {--m|migration : Create a new migration file for the model}
                             {--f|factory : Create a new factory for the model}';
 
-    protected $description = 'Create a new Eloquent Model class inside a module';
+    protected $description = 'Create a new Eloquent Model class inside Domain/Models of a module';
 
     public function handle(): int
     {
@@ -25,7 +25,7 @@ class ModelMakeCommand extends GeneratorCommand
         $rawName = $this->argument('name');
         $className = Str::studly($rawName);
 
-        $filePath = $module->getPath("Models/{$className}.php");
+        $filePath = $module->getPath("Domain/Models/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
@@ -50,7 +50,7 @@ class ModelMakeCommand extends GeneratorCommand
         }
 
         if ((bool) $this->option('factory')) {
-            $factoryPath = $module->getPath("database/factories/{$className}Factory.php");
+            $factoryPath = $module->getPath("Database/Factories/{$className}Factory.php");
             $factoryReplacements = [
                 'namespace' => rtrim($this->registry->getNamespace(), '\\'),
                 'module' => $module->getName(),

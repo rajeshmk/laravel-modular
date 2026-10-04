@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\Enums;
+
+enum {{class}}: string
+{
+    case DRAFT = 'draft';
+    case ACTIVE = 'active';
+    case INACTIVE = 'inactive';
+}

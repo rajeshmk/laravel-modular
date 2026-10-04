@@ -12,10 +12,10 @@ class ControllerMakeCommand extends GeneratorCommand
     protected $signature = 'module:make-controller
                             {module : The name of the module}
                             {name : The name of the controller class}
-                            {--api : Create an API controller in Controllers/Api/V1/}
-                            {--admin : Create an Admin controller in Controllers/Admin/}';
+                            {--api : Create an API controller in Interface/Controllers/Api/V1/}
+                            {--admin : Create an Admin controller in Interface/Controllers/Admin/}';
 
-    protected $description = 'Create a new Controller class inside a module';
+    protected $description = 'Create a new Controller class inside Interface/Controllers of a module';
 
     public function handle(): int
     {
@@ -33,14 +33,14 @@ class ControllerMakeCommand extends GeneratorCommand
         $isAdmin = (bool) $this->option('admin');
 
         $stubName = 'controller';
-        $subDir = 'Controllers';
+        $subDir = 'Interface/Controllers';
 
         if ($isApi) {
             $stubName = 'controller.api';
-            $subDir = 'Controllers/Api/V1';
+            $subDir = 'Interface/Controllers/Api/V1';
         } elseif ($isAdmin) {
             $stubName = 'controller.admin';
-            $subDir = 'Controllers/Admin';
+            $subDir = 'Interface/Controllers/Admin';
         }
 
         $filePath = $module->getPath("{$subDir}/{$className}.php");

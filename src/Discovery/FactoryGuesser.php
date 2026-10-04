@@ -16,7 +16,15 @@ final readonly class FactoryGuesser
         Factory::guessFactoryNamesUsing(function (string $modelName) use ($cleanNamespace): string {
             if (Str::startsWith($modelName, $cleanNamespace)) {
                 $after = Str::after($modelName, $cleanNamespace);
-                $module = Str::before($after, '\\Models\\');
+
+                if (Str::contains($after, '\\Domain\\Models\\')) {
+                    $module = Str::before($after, '\\Domain\\Models\\');
+                } elseif (Str::contains($after, '\\Models\\')) {
+                    $module = Str::before($after, '\\Models\\');
+                } else {
+                    $module = Str::before($after, '\\');
+                }
+
                 $modelBasename = class_basename($modelName);
 
                 return "{$cleanNamespace}{$module}\\Database\\Factories\\{$modelBasename}Factory";

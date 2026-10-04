@@ -6,16 +6,24 @@ namespace Hatchyu\Modular;
 
 use Hatchyu\Modular\Console\Commands\ActionMakeCommand;
 use Hatchyu\Modular\Console\Commands\ControllerMakeCommand;
+use Hatchyu\Modular\Console\Commands\DataMakeCommand;
 use Hatchyu\Modular\Console\Commands\DtoMakeCommand;
+use Hatchyu\Modular\Console\Commands\EnumMakeCommand;
+use Hatchyu\Modular\Console\Commands\EventMakeCommand;
+use Hatchyu\Modular\Console\Commands\JobMakeCommand;
 use Hatchyu\Modular\Console\Commands\MigrationMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\PolicyMakeCommand;
 use Hatchyu\Modular\Console\Commands\QueryMakeCommand;
 use Hatchyu\Modular\Console\Commands\RequestMakeCommand;
 use Hatchyu\Modular\Console\Commands\ResourceMakeCommand;
+use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\SeederMakeCommand;
+use Hatchyu\Modular\Console\Commands\ServiceMakeCommand;
 use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
 use Hatchyu\Modular\Discovery\MigrationRegistrar;
@@ -68,10 +76,18 @@ class ModularServiceProvider extends ServiceProvider
                 ActionMakeCommand::class,
                 QueryMakeCommand::class,
                 DtoMakeCommand::class,
+                DataMakeCommand::class,
                 ControllerMakeCommand::class,
                 RequestMakeCommand::class,
                 ResourceMakeCommand::class,
                 ModelMakeCommand::class,
+                PolicyMakeCommand::class,
+                EnumMakeCommand::class,
+                EventMakeCommand::class,
+                JobMakeCommand::class,
+                RuleMakeCommand::class,
+                ServiceMakeCommand::class,
+                SeederMakeCommand::class,
                 MigrationMakeCommand::class,
                 ModuleListCommand::class,
                 ModuleCacheCommand::class,

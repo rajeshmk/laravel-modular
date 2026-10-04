@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Hatchyu\Modular\Discovery\ModuleRegistry;
 
-it('scaffolds a complete domain module', function () {
+it('scaffolds a complete domain module conforming to DDD 4-layer architecture', function () {
     $this->artisan('module:make', ['name' => 'Billing'])
         ->assertSuccessful()
     ;
@@ -19,48 +19,179 @@ it('scaffolds a complete domain module', function () {
         ->and(file_exists($module->getWebRoutesPath()))->toBeTrue()
         ->and(file_exists($module->getApiRoutesPath()))->toBeTrue()
         ->and(file_exists($module->getConfigPath()))->toBeTrue()
-        ->and(is_dir($module->getPath('Actions')))->toBeTrue()
-        ->and(is_dir($module->getPath('Queries')))->toBeTrue()
-        ->and(is_dir($module->getPath('Controllers/Api/V1')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/Models')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/Policies')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/Enums')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/Events')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/ValueObjects')))->toBeTrue()
+        ->and(is_dir($module->getPath('Domain/Observers')))->toBeTrue()
+        ->and(is_dir($module->getPath('Application/Actions')))->toBeTrue()
+        ->and(is_dir($module->getPath('Application/Queries')))->toBeTrue()
+        ->and(is_dir($module->getPath('Application/Data')))->toBeTrue()
+        ->and(is_dir($module->getPath('Application/Services')))->toBeTrue()
+        ->and(is_dir($module->getPath('Application/Rules')))->toBeTrue()
+        ->and(is_dir($module->getPath('Interface/Controllers/Api/V1')))->toBeTrue()
+        ->and(is_dir($module->getPath('Interface/Controllers/Admin')))->toBeTrue()
+        ->and(is_dir($module->getPath('Interface/Requests')))->toBeTrue()
+        ->and(is_dir($module->getPath('Interface/Resources')))->toBeTrue()
+        ->and(is_dir($module->getPath('Interface/Console/Commands')))->toBeTrue()
+        ->and(is_dir($module->getPath('Infrastructure/Jobs')))->toBeTrue()
+        ->and(is_dir($module->getPath('Infrastructure/Mails')))->toBeTrue()
+        ->and(is_dir($module->getPath('Infrastructure/Notifications')))->toBeTrue()
+        ->and(is_dir($module->getPath('Database/Migrations')))->toBeTrue()
+        ->and(is_dir($module->getPath('Database/Factories')))->toBeTrue()
+        ->and(is_dir($module->getPath('Database/Seeders')))->toBeTrue()
     ;
 });
 
-it('generates individual module components via cli', function () {
+it('generates individual module components via cli into proper DDD layers', function () {
     $this->artisan('module:make', ['name' => 'Catalog'])->assertSuccessful();
 
-    // Action
+    // Application: Action
     $this->artisan('module:make-action', ['module' => 'Catalog', 'name' => 'CreateProductAction'])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/Actions/CreateProductAction.php'))->toBeTrue();
+    $actionFile = __DIR__ . '/../tmp/modules/Catalog/Application/Actions/CreateProductAction.php';
+    expect(file_exists($actionFile))->toBeTrue()
+        ->and(file_get_contents($actionFile))->toContain('namespace Modules\Catalog\Application\Actions;')
+    ;
 
-    // Query
+    // Application: Query
     $this->artisan('module:make-query', ['module' => 'Catalog', 'name' => 'GetProductListQuery'])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/Queries/GetProductListQuery.php'))->toBeTrue();
+    $queryFile = __DIR__ . '/../tmp/modules/Catalog/Application/Queries/GetProductListQuery.php';
+    expect(file_exists($queryFile))->toBeTrue()
+        ->and(file_get_contents($queryFile))->toContain('namespace Modules\Catalog\Application\Queries;')
+    ;
 
-    // DTO
+    // Application: DTO / Data
     $this->artisan('module:make-dto', ['module' => 'Catalog', 'name' => 'ProductData'])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/DTOs/ProductData.php'))->toBeTrue();
+    $dtoFile = __DIR__ . '/../tmp/modules/Catalog/Application/Data/ProductData.php';
+    expect(file_exists($dtoFile))->toBeTrue()
+        ->and(file_get_contents($dtoFile))->toContain('namespace Modules\Catalog\Application\Data;')
+    ;
 
-    // API Controller
+    $this->artisan('module:make-data', ['module' => 'Catalog', 'name' => 'CreateProductData'])
+        ->assertSuccessful()
+    ;
+    $dataFile = __DIR__ . '/../tmp/modules/Catalog/Application/Data/CreateProductData.php';
+    expect(file_exists($dataFile))->toBeTrue()
+        ->and(file_get_contents($dataFile))->toContain('namespace Modules\Catalog\Application\Data;')
+    ;
+
+    // Application: Rule
+    $this->artisan('module:make-rule', ['module' => 'Catalog', 'name' => 'ValidSkuRule'])
+        ->assertSuccessful()
+    ;
+    $ruleFile = __DIR__ . '/../tmp/modules/Catalog/Application/Rules/ValidSkuRule.php';
+    expect(file_exists($ruleFile))->toBeTrue()
+        ->and(file_get_contents($ruleFile))->toContain('namespace Modules\Catalog\Application\Rules;')
+    ;
+
+    // Application: Service
+    $this->artisan('module:make-service', ['module' => 'Catalog', 'name' => 'ProductPricingService'])
+        ->assertSuccessful()
+    ;
+    $serviceFile = __DIR__ . '/../tmp/modules/Catalog/Application/Services/ProductPricingService.php';
+    expect(file_exists($serviceFile))->toBeTrue()
+        ->and(file_get_contents($serviceFile))->toContain('namespace Modules\Catalog\Application\Services;')
+    ;
+
+    // Interface: API Controller
     $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductController', '--api' => true])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/Controllers/Api/V1/ProductController.php'))->toBeTrue();
+    $apiControllerFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Controllers/Api/V1/ProductController.php';
+    expect(file_exists($apiControllerFile))->toBeTrue()
+        ->and(file_get_contents($apiControllerFile))->toContain('namespace Modules\Catalog\Interface\Controllers\Api\V1;')
+    ;
 
-    // Form Request
+    // Interface: Admin Controller
+    $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductAdminController', '--admin' => true])
+        ->assertSuccessful()
+    ;
+    $adminControllerFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Controllers/Admin/ProductAdminController.php';
+    expect(file_exists($adminControllerFile))->toBeTrue()
+        ->and(file_get_contents($adminControllerFile))->toContain('namespace Modules\Catalog\Interface\Controllers\Admin;')
+    ;
+
+    // Interface: Form Request
     $this->artisan('module:make-request', ['module' => 'Catalog', 'name' => 'StoreProductRequest'])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/Requests/StoreProductRequest.php'))->toBeTrue();
+    $requestFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Requests/StoreProductRequest.php';
+    expect(file_exists($requestFile))->toBeTrue()
+        ->and(file_get_contents($requestFile))->toContain('namespace Modules\Catalog\Interface\Requests;')
+    ;
 
-    // Model
-    $this->artisan('module:make-model', ['module' => 'Catalog', 'name' => 'Product'])
+    // Interface: Resource
+    $this->artisan('module:make-resource', ['module' => 'Catalog', 'name' => 'ProductResource'])
         ->assertSuccessful()
     ;
-    expect(file_exists(__DIR__ . '/../tmp/modules/Catalog/Models/Product.php'))->toBeTrue();
+    $resourceFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Resources/ProductResource.php';
+    expect(file_exists($resourceFile))->toBeTrue()
+        ->and(file_get_contents($resourceFile))->toContain('namespace Modules\Catalog\Interface\Resources;')
+    ;
+
+    // Domain: Model with factory & migration
+    $this->artisan('module:make-model', ['module' => 'Catalog', 'name' => 'Product', '-m' => true, '-f' => true])
+        ->assertSuccessful()
+    ;
+    $modelFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Models/Product.php';
+    expect(file_exists($modelFile))->toBeTrue()
+        ->and(file_get_contents($modelFile))->toContain('namespace Modules\Catalog\Domain\Models;')
+    ;
+
+    $factoryFile = __DIR__ . '/../tmp/modules/Catalog/Database/Factories/ProductFactory.php';
+    expect(file_exists($factoryFile))->toBeTrue()
+        ->and(file_get_contents($factoryFile))->toContain('namespace Modules\Catalog\Database\Factories;')
+        ->and(file_get_contents($factoryFile))->toContain('use Modules\Catalog\Domain\Models\Product;')
+    ;
+
+    // Domain: Policy
+    $this->artisan('module:make-policy', ['module' => 'Catalog', 'name' => 'ProductPolicy'])
+        ->assertSuccessful()
+    ;
+    $policyFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Policies/ProductPolicy.php';
+    expect(file_exists($policyFile))->toBeTrue()
+        ->and(file_get_contents($policyFile))->toContain('namespace Modules\Catalog\Domain\Policies;')
+    ;
+
+    // Domain: Enum
+    $this->artisan('module:make-enum', ['module' => 'Catalog', 'name' => 'ProductStatus'])
+        ->assertSuccessful()
+    ;
+    $enumFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Enums/ProductStatus.php';
+    expect(file_exists($enumFile))->toBeTrue()
+        ->and(file_get_contents($enumFile))->toContain('namespace Modules\Catalog\Domain\Enums;')
+    ;
+
+    // Domain: Event
+    $this->artisan('module:make-event', ['module' => 'Catalog', 'name' => 'ProductCreatedEvent'])
+        ->assertSuccessful()
+    ;
+    $eventFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Events/ProductCreatedEvent.php';
+    expect(file_exists($eventFile))->toBeTrue()
+        ->and(file_get_contents($eventFile))->toContain('namespace Modules\Catalog\Domain\Events;')
+    ;
+
+    // Infrastructure: Job
+    $this->artisan('module:make-job', ['module' => 'Catalog', 'name' => 'SyncProductJob'])
+        ->assertSuccessful()
+    ;
+    $jobFile = __DIR__ . '/../tmp/modules/Catalog/Infrastructure/Jobs/SyncProductJob.php';
+    expect(file_exists($jobFile))->toBeTrue()
+        ->and(file_get_contents($jobFile))->toContain('namespace Modules\Catalog\Infrastructure\Jobs;')
+    ;
+
+    // Database: Seeder
+    $this->artisan('module:make-seeder', ['module' => 'Catalog', 'name' => 'ProductSeeder'])
+        ->assertSuccessful()
+    ;
+    $seederFile = __DIR__ . '/../tmp/modules/Catalog/Database/Seeders/ProductSeeder.php';
+    expect(file_exists($seederFile))->toBeTrue()
+        ->and(file_get_contents($seederFile))->toContain('namespace Modules\Catalog\Database\Seeders;');
 });

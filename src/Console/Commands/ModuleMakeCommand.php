@@ -14,7 +14,7 @@ class ModuleMakeCommand extends GeneratorCommand
                             {name : The name of the module (e.g. Order, Customer, Agent)}
                             {--force : Overwrite existing module files}';
 
-    protected $description = 'Scaffold a new domain module conforming to the Modular Monolith blueprint';
+    protected $description = 'Scaffold a new domain module conforming to the DDD 4-layer architecture';
 
     public function handle(): int
     {
@@ -39,28 +39,42 @@ class ModuleMakeCommand extends GeneratorCommand
         $this->components->info("Scaffolding module [{$moduleName}]...");
 
         $directories = [
-            'Actions',
-            'Queries/Filters',
-            'Queries/Searches',
-            'Controllers/Api/V1',
-            'Controllers/Admin',
-            'Requests',
-            'Resources',
-            'Models',
-            'Exceptions',
-            'Contracts',
-            'DTOs',
-            'Enums',
-            'Events',
-            'Listeners',
-            'Middleware',
-            'Jobs',
-            'Console',
-            'config',
-            'database/migrations',
-            'database/factories',
-            'resources/views',
+            // 1. Domain Layer
+            'Domain/Models',
+            'Domain/ValueObjects',
+            'Domain/Enums',
+            'Domain/Events',
+            'Domain/Policies',
+            'Domain/Observers',
+
+            // 2. Application Layer
+            'Application/Actions',
+            'Application/Queries',
+            'Application/Data',
+            'Application/Services',
+            'Application/Rules',
+
+            // 3. Interface Layer
+            'Interface/Controllers/Api/V1',
+            'Interface/Controllers/Admin',
+            'Interface/Requests',
+            'Interface/Resources',
+            'Interface/Console/Commands',
+
+            // 4. Infrastructure Layer
+            'Infrastructure/Jobs',
+            'Infrastructure/Mails',
+            'Infrastructure/Notifications',
+
+            // 5. Database Layer
+            'Database/Migrations',
+            'Database/Factories',
+            'Database/Seeders',
+
+            // 6. Routes, Config & Views
             'routes',
+            'config',
+            'resources/views',
         ];
 
         foreach ($directories as $dir) {
@@ -95,25 +109,28 @@ class ModuleMakeCommand extends GeneratorCommand
 
         // 6. Gitkeep empty directories
         $emptyDirs = [
-            'Actions',
-            'Queries/Filters',
-            'Queries/Searches',
-            'Controllers/Api/V1',
-            'Controllers/Admin',
-            'Requests',
-            'Resources',
-            'Models',
-            'Exceptions',
-            'Contracts',
-            'DTOs',
-            'Enums',
-            'Events',
-            'Listeners',
-            'Middleware',
-            'Jobs',
-            'Console',
-            'database/migrations',
-            'database/factories',
+            'Domain/Models',
+            'Domain/ValueObjects',
+            'Domain/Enums',
+            'Domain/Events',
+            'Domain/Policies',
+            'Domain/Observers',
+            'Application/Actions',
+            'Application/Queries',
+            'Application/Data',
+            'Application/Services',
+            'Application/Rules',
+            'Interface/Controllers/Api/V1',
+            'Interface/Controllers/Admin',
+            'Interface/Requests',
+            'Interface/Resources',
+            'Interface/Console/Commands',
+            'Infrastructure/Jobs',
+            'Infrastructure/Mails',
+            'Infrastructure/Notifications',
+            'Database/Migrations',
+            'Database/Factories',
+            'Database/Seeders',
         ];
 
         foreach ($emptyDirs as $dir) {

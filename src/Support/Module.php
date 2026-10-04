@@ -33,6 +33,33 @@ final readonly class Module
         return rtrim($this->path, '/\\') . DIRECTORY_SEPARATOR . ltrim($subPath, '/\\');
     }
 
+    public function getDomainPath(?string $subPath = null): string
+    {
+        return $this->getPath('Domain' . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
+    public function getApplicationPath(?string $subPath = null): string
+    {
+        return $this->getPath('Application' . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
+    public function getInterfacePath(?string $subPath = null): string
+    {
+        return $this->getPath('Interface' . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
+    public function getInfrastructurePath(?string $subPath = null): string
+    {
+        return $this->getPath('Infrastructure' . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
+    public function getDatabasePath(?string $subPath = null): string
+    {
+        $base = is_dir($this->getPath('Database')) ? 'Database' : 'database';
+
+        return $this->getPath($base . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
     public function getNamespace(?string $subNamespace = null): string
     {
         $base = rtrim($this->namespace, '\\') . '\\' . $this->name;
@@ -86,6 +113,11 @@ final readonly class Module
 
     public function getMigrationsPath(): string
     {
+        $capitalized = $this->getPath('Database/Migrations');
+        if (is_dir($capitalized)) {
+            return $capitalized;
+        }
+
         return $this->getPath('database/migrations');
     }
 
@@ -96,7 +128,27 @@ final readonly class Module
 
     public function getFactoriesPath(): string
     {
+        $capitalized = $this->getPath('Database/Factories');
+        if (is_dir($capitalized)) {
+            return $capitalized;
+        }
+
         return $this->getPath('database/factories');
+    }
+
+    public function hasSeeders(): bool
+    {
+        return is_dir($this->getSeedersPath());
+    }
+
+    public function getSeedersPath(): string
+    {
+        $capitalized = $this->getPath('Database/Seeders');
+        if (is_dir($capitalized)) {
+            return $capitalized;
+        }
+
+        return $this->getPath('database/seeders');
     }
 
     public function hasViews(): bool
@@ -133,6 +185,8 @@ final readonly class Module
             'has_web_routes' => $this->hasWebRoutes(),
             'has_api_routes' => $this->hasApiRoutes(),
             'has_migrations' => $this->hasMigrations(),
+            'has_factories' => $this->hasFactories(),
+            'has_seeders' => $this->hasSeeders(),
             'has_views' => $this->hasViews(),
             'has_config' => $this->hasConfig(),
         ];

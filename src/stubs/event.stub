@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\Events;
+
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class {{class}}
+{
+    use Dispatchable, SerializesModels;
+
+    public function __construct(
+        // Define event payload
+    ) {}
+}

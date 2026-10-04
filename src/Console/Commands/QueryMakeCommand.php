@@ -13,7 +13,7 @@ class QueryMakeCommand extends GeneratorCommand
                             {module : The name of the module}
                             {name : The name of the query class (e.g. GetOrderListQuery)}';
 
-    protected $description = 'Create a new Query class inside a module';
+    protected $description = 'Create a new Query class inside Application/Queries of a module';
 
     public function handle(): int
     {
@@ -27,7 +27,7 @@ class QueryMakeCommand extends GeneratorCommand
             $className .= 'Query';
         }
 
-        $filePath = $module->getPath("Queries/{$className}.php");
+        $filePath = $module->getPath("Application/Queries/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),

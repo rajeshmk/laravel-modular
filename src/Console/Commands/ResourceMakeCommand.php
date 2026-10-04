@@ -13,7 +13,7 @@ class ResourceMakeCommand extends GeneratorCommand
                             {module : The name of the module}
                             {name : The name of the JsonResource class}';
 
-    protected $description = 'Create a new JsonResource class inside a module';
+    protected $description = 'Create a new JsonResource class inside Interface/Resources of a module';
 
     public function handle(): int
     {
@@ -27,7 +27,7 @@ class ResourceMakeCommand extends GeneratorCommand
             $className .= 'Resource';
         }
 
-        $filePath = $module->getPath("Resources/{$className}.php");
+        $filePath = $module->getPath("Interface/Resources/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),

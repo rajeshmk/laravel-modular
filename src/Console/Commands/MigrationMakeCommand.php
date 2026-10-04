@@ -13,7 +13,7 @@ class MigrationMakeCommand extends GeneratorCommand
                             {module : The name of the module}
                             {name : The name of the migration (e.g. create_orders_table)}';
 
-    protected $description = 'Create a new database migration file inside a module';
+    protected $description = 'Create a new database migration file inside Database/Migrations of a module';
 
     public function handle(): int
     {
@@ -25,7 +25,12 @@ class MigrationMakeCommand extends GeneratorCommand
 
         $timestamp = date('Y_m_d_His');
         $fileName = "{$timestamp}_{$migrationName}.php";
-        $filePath = $module->getPath("database/migrations/{$fileName}");
+
+        $migrationDir = is_dir($module->getPath('database/migrations')) && ! is_dir($module->getPath('Database/Migrations'))
+            ? 'database/migrations'
+            : 'Database/Migrations';
+
+        $filePath = $module->getPath("{$migrationDir}/{$fileName}");
 
         $tableName = 'table_name';
         $isCreate = false;
@@ -60,7 +65,6 @@ class MigrationMakeCommand extends GeneratorCommand
                         Schema::dropIfExists('{$tableName}');
                     }
                 };
-
                 PHP;
         } else {
             $content = <<<PHP
@@ -88,7 +92,6 @@ class MigrationMakeCommand extends GeneratorCommand
                         });
                     }
                 };
-
                 PHP;
         }
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace {{namespace}}\{{module}}\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use {{namespace}}\{{module}}\Models\{{model}};
+use {{namespace}}\{{module}}\Domain\Models\{{model}};
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\{{namespace}}\{{module}}\Models\{{model}}>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\{{namespace}}\{{module}}\Domain\Models\{{model}}>
  */
 class {{model}}Factory extends Factory
 {

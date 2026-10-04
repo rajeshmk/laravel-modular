@@ -13,7 +13,7 @@ class ActionMakeCommand extends GeneratorCommand
                             {module : The name of the module}
                             {name : The name of the action class (e.g. CreateOrderAction)}';
 
-    protected $description = 'Create a new Action class inside a module';
+    protected $description = 'Create a new Action class inside Application/Actions of a module';
 
     public function handle(): int
     {
@@ -27,7 +27,7 @@ class ActionMakeCommand extends GeneratorCommand
             $className .= 'Action';
         }
 
-        $filePath = $module->getPath("Actions/{$className}.php");
+        $filePath = $module->getPath("Application/Actions/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),

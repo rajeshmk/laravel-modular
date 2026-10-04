@@ -4,17 +4,93 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/hatchyu/laravel-modular.svg?style=flat-square)](https://packagist.org/packages/hatchyu/laravel-modular)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
-A high-performance, zero-boilerplate **Modular Monolith** architecture and Pragmatic CQRS generator CLI for Laravel applications.
+A high-performance, zero-boilerplate **Domain-Driven Design (DDD) 4-Layer Modular Architecture** and Pragmatic CQRS generator CLI for modern Laravel applications.
 
 ---
 
 ## Key Features
 
 - 🚀 **Zero-Boilerplate Auto-Discovery:** Automatically discovers module service providers, routes (`web.php` & `api.php`), database migrations, namespaced views, and configs.
+- 🏛️ **DDD 4-Layer Architecture:** Cleanly partitions modules into `Domain/`, `Application/`, `Interface/`, `Infrastructure/`, and `Database/`.
 - ⚡ **Production Performance Caching:** Built-in `php artisan module:cache` eliminates runtime filesystem scans in production for 0ms overhead.
-- 🛠️ **Pragmatic CQRS Generators:** Dedicated Artisan CLI to scaffold standard enterprise modules, Actions (writes), Queries (reads), DTOs, Controllers, and Requests.
-- 🏭 **Model Factory Guesser:** Automatically maps Eloquent model factories located inside `Modules\{Module}\Database\Factories`.
-- 🧩 **Non-Invasive:** No custom repository overhead, no `module.json` manifest requirements. Clean standard Laravel conventions.
+- 🛠️ **Full-Featured Artisan CLI:** Generators for Domain Models, Policies, Enums, Events, CQRS Actions (writes), Queries (reads), DTOs (`Data`), Rules, Services, Thin Controllers, Requests, Resources, Jobs, Migrations, and Seeders.
+- 🏭 **Smart Factory Guesser:** Automatically resolves Eloquent model factories located inside `Modules\{Module}\Database\Factories`.
+- 🧩 **Non-Invasive & Standards-Compliant:** Adheres to modern PHP 8.4+ and strict typing standards without vendor lock-in.
+
+---
+
+## Architecture Blueprint (DDD 4-Layer)
+
+Each module (`modules/{ModuleName}/`) is structured into four explicit architectural layers plus database and delivery files:
+
+```text
+modules/{ModuleName}/
+├── Domain/                         # Pure Ubiquitous Business Logic & Invariants
+│   ├── Models/                     # Eloquent Entities & Models
+│   ├── ValueObjects/               # Domain Value Objects
+│   ├── Enums/                      # Domain Enums
+│   ├── Events/                     # Domain Events (e.g., CustomerRegisteredEvent)
+│   ├── Policies/                   # Authorization Rules & Gate Policies
+│   └── Observers/                  # Model Observers
+│
+├── Application/                    # Use-Case Orchestration & CQRS
+│   ├── Actions/                    # CQRS Write Commands (e.g., CreateCustomerAction)
+│   ├── Queries/                    # CQRS Read Queries (e.g., ListCustomersQuery)
+│   ├── Data/                       # Application Data Transfer Objects (e.g., CreateCustomerData)
+│   ├── Services/                   # Application Orchestration Services
+│   └── Rules/                      # Payload & Input Validation Rules
+│
+├── Interface/                      # External Delivery Channels
+│   ├── Controllers/                # Ultra-Thin HTTP API & Web Controllers
+│   │   ├── Api/V1/
+│   │   └── Admin/
+│   ├── Requests/                   # HTTP Form Request Validation & Query Params
+│   ├── Resources/                  # JSON:API & Response Transformers
+│   └── Console/Commands/           # Module-Specific Artisan CLI Commands
+│
+├── Infrastructure/                 # Message Services & External Integrations
+│   ├── Jobs/                       # Asynchronous Queue Jobs
+│   ├── Mails/                      # Mailables
+│   └── Notifications/              # Channel Notifications
+│
+├── Database/                       # Migrations, Factories & Seeders
+│   ├── Migrations/                 # Module Migrations
+│   ├── Factories/                  # Model Factories
+│   └── Seeders/                    # Module Seeders
+│
+├── routes/                         # Module Route Definitions
+│   ├── api.php                     # API routes
+│   └── web.php                     # Web routes
+│
+├── config/                         # Module Configuration
+│   └── config.php
+│
+├── resources/views/                # Optional Blade Views
+└── {ModuleName}ServiceProvider.php # Module Service Provider
+```
+
+---
+
+## Standard Module Namespaces
+
+| Component | Target Namespace Example |
+| :--- | :--- |
+| **Eloquent Model** | `Modules\Customer\Domain\Models\Customer` |
+| **Domain Policy** | `Modules\Customer\Domain\Policies\CustomerPolicy` |
+| **Domain Enum** | `Modules\Customer\Domain\Enums\CustomerStatus` |
+| **Domain Event** | `Modules\Customer\Domain\Events\CustomerRegisteredEvent` |
+| **CQRS Write Action**| `Modules\Customer\Application\Actions\CreateCustomerAction` |
+| **CQRS Read Query** | `Modules\Customer\Application\Queries\ListCustomersQuery` |
+| **Application DTO** | `Modules\Customer\Application\Data\CreateCustomerData` |
+| **App Service** | `Modules\Customer\Application\Services\CustomerPricingService` |
+| **App Rule** | `Modules\Customer\Application\Rules\ValidCustomerTaxIdRule` |
+| **HTTP Controller** | `Modules\Customer\Interface\Controllers\Api\V1\CustomerController` |
+| **Form Request** | `Modules\Customer\Interface\Requests\UpdateCustomerRequest` |
+| **Resource** | `Modules\Customer\Interface\Resources\CustomerResource` |
+| **Queue Job** | `Modules\Customer\Infrastructure\Jobs\SyncCustomerToCrmJob` |
+| **Model Factory** | `Modules\Customer\Database\Factories\CustomerFactory` |
+| **Database Seeder**| `Modules\Customer\Database\Seeders\CustomerSeeder` |
+| **Service Provider**| `Modules\Customer\CustomerServiceProvider` |
 
 ---
 
@@ -61,6 +137,7 @@ This creates `config/modular.php`:
 return [
     'path' => base_path('modules'),
     'namespace' => 'Modules\\',
+    'layout' => 'ddd',
     'autodiscover' => [
         'providers' => true,
         'routes' => true,
@@ -72,6 +149,7 @@ return [
     'routing' => [
         'web_middleware' => ['web'],
         'api_middleware' => ['api'],
+        'api_prefix' => 'api',
     ],
     'cache_path' => base_path('bootstrap/cache/modules.php'),
 ];
@@ -81,73 +159,77 @@ return [
 
 ## Artisan CLI Commands
 
-### Scaffolding a New Module
-Scaffold an entire enterprise module conforming to the Modular Monolith blueprint:
+### Scaffolding a Complete Module
+Scaffold an entire DDD 4-layer module:
 
 ```bash
 php artisan module:make Order
 ```
 
-This generates:
-```text
-modules/Order/
-├── Actions/
-├── Queries/
-│   ├── Filters/
-│   └── Searches/
-├── Controllers/
-│   ├── Api/V1/
-│   └── Admin/
-├── Requests/
-├── Resources/
-├── Models/
-├── Exceptions/
-├── Contracts/
-├── DTOs/
-├── Enums/
-├── Events/
-├── Listeners/
-├── Middleware/
-├── Jobs/
-├── Console/
-├── config/config.php
-├── OrderServiceProvider.php
-├── database/
-│   ├── migrations/
-│   └── factories/
-├── resources/views/
-└── routes/
-    ├── api.php
-    └── web.php
+### Domain Layer Generators
+```bash
+# Eloquent Model (with optional migration & factory)
+php artisan module:make-model Order Order -m -f
+
+# Authorization Policy
+php artisan module:make-policy Order OrderPolicy --model=Order
+
+# Backed Enum
+php artisan module:make-enum Order OrderStatus
+
+# Domain Event
+php artisan module:make-event Order OrderPlacedEvent
 ```
 
-### Generator Commands
-Generate individual components inside any module:
-
+### Application Layer Generators (CQRS & Use-Cases)
 ```bash
-# Generate a Write Action
+# CQRS Write Action
 php artisan module:make-action Order CreateOrderAction
 
-# Generate a Read Query
+# CQRS Read Query
 php artisan module:make-query Order GetOrderListQuery
 
-# Generate a Readonly DTO
+# Application Data Transfer Object (DTO)
+php artisan module:make-data Order CreateOrderData
 php artisan module:make-dto Order OrderData
 
-# Generate a Controller (Web, API, or Admin)
+# Validation Rule
+php artisan module:make-rule Order ValidOrderTotalRule
+
+# Application Service
+php artisan module:make-service Order OrderCalculationService
+```
+
+### Interface Layer Generators (Delivery)
+```bash
+# Controllers (Web, API V1, or Admin)
 php artisan module:make-controller Order OrderController
 php artisan module:make-controller Order OrderController --api
 php artisan module:make-controller Order OrderController --admin
 
-# Generate FormRequest & JsonResource
+# Form Request
 php artisan module:make-request Order StoreOrderRequest
+
+# JSON:API / JsonResource
 php artisan module:make-resource Order OrderResource
+```
 
-# Generate Model (with optional migration & factory)
-php artisan module:make-model Order Order -m -f
+### Infrastructure Layer Generators
+```bash
+# Asynchronous Queue Job
+php artisan module:make-job Order SyncOrderToErpJob
 
-# Generate a Migration
+# Synchronous Job
+php artisan module:make-job Order ProcessOrderJob --sync
+```
+
+### Database Layer Generators
+```bash
+# Database Migration
 php artisan module:make-migration Order create_orders_table
+
+# Database Seeder
+php artisan module:make-seeder Order OrderSeeder
 ```
 
 ### Inspection & Optimization Commands
@@ -167,7 +249,7 @@ php artisan module:clear
 
 ## Production Deployment Optimization
 
-In production environments, add `php artisan module:cache` to your deployment script:
+In production environments, add `php artisan module:cache` to your deployment pipeline:
 
 ```bash
 php artisan config:cache
@@ -180,7 +262,7 @@ This compiles all module paths and configurations into `bootstrap/cache/modules.
 
 ---
 
-## Testing
+## Testing & Quality
 
 Run the test suite using Pest:
 

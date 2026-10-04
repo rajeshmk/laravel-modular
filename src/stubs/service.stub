@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Application\Services;
+
+class {{class}}
+{
+    // TODO: Implement application service orchestration
+}

@@ -28,22 +28,26 @@ it('lists all modules via module:list', function () {
     ;
 });
 
-it('correctly guesses factory names for modular models', function () {
+it('correctly guesses factory names for modular models in DDD and flat layouts', function () {
     $guesser = new FactoryGuesser();
     $guesser->register('Modules\\');
 
-    $guessed = Factory::resolveFactoryName('Modules\\Order\\Models\\Order');
+    // DDD 4-Layer layout
+    $guessedDdd = Factory::resolveFactoryName('Modules\\Order\\Domain\\Models\\Order');
+    expect($guessedDdd)->toBe('Modules\\Order\\Database\\Factories\\OrderFactory');
 
-    expect($guessed)->toBe('Modules\\Order\\Database\\Factories\\OrderFactory');
+    // Legacy flat layout
+    $guessedFlat = Factory::resolveFactoryName('Modules\\Order\\Models\\Order');
+    expect($guessedFlat)->toBe('Modules\\Order\\Database\\Factories\\OrderFactory');
 });
 
-it('creates and checks migration file for module', function () {
+it('creates and checks migration file for module in Database/Migrations', function () {
     $this->artisan('module:make', ['name' => 'Finance'])->assertSuccessful();
     $this->artisan('module:make-migration', [
         'module' => 'Finance',
         'name' => 'create_invoices_table',
     ])->assertSuccessful();
 
-    $migrations = glob(__DIR__ . '/../tmp/modules/Finance/database/migrations/*_create_invoices_table.php');
+    $migrations = glob(__DIR__ . '/../tmp/modules/Finance/Database/Migrations/*_create_invoices_table.php');
     expect($migrations)->toHaveCount(1);
 });

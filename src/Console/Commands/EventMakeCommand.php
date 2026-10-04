@@ -7,13 +7,13 @@ namespace Hatchyu\Modular\Console\Commands;
 use Hatchyu\Modular\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class RequestMakeCommand extends GeneratorCommand
+class EventMakeCommand extends GeneratorCommand
 {
-    protected $signature = 'module:make-request
+    protected $signature = 'module:make-event
                             {module : The name of the module}
-                            {name : The name of the FormRequest class}';
+                            {name : The name of the event class (e.g. OrderPlacedEvent)}';
 
-    protected $description = 'Create a new FormRequest class inside Interface/Requests of a module';
+    protected $description = 'Create a new Domain Event class inside Domain/Events of a module';
 
     public function handle(): int
     {
@@ -23,11 +23,11 @@ class RequestMakeCommand extends GeneratorCommand
         $rawName = $this->argument('name');
         $className = Str::studly($rawName);
 
-        if (! Str::endsWith($className, 'Request')) {
-            $className .= 'Request';
+        if (! Str::endsWith($className, 'Event')) {
+            $className .= 'Event';
         }
 
-        $filePath = $module->getPath("Interface/Requests/{$className}.php");
+        $filePath = $module->getPath("Domain/Events/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
@@ -35,10 +35,10 @@ class RequestMakeCommand extends GeneratorCommand
             'class' => $className,
         ];
 
-        $content = $this->replacePlaceholders($this->getStub('request'), $replacements);
+        $content = $this->replacePlaceholders($this->getStub('event'), $replacements);
 
         if ($this->writeFile($filePath, $content)) {
-            $this->components->info("Request [{$className}] created successfully at [{$filePath}].");
+            $this->components->info("Domain Event [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
         }

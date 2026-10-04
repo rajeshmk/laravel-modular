@@ -18,6 +18,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Architecture Layout Preset
+    |--------------------------------------------------------------------------
+    |
+    | "ddd": 4-Layer Domain-Driven Design (Domain, Application, Interface, Infrastructure, Database)
+    | "flat": Legacy flat structure (Actions, Queries, Controllers, Models, etc.)
+    |
+    */
+    'layout' => 'ddd',
+
+    /*
+    |--------------------------------------------------------------------------
     | Auto-Discovery Settings
     |--------------------------------------------------------------------------
     |

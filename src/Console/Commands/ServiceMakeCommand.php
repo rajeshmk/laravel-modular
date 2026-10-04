@@ -7,13 +7,13 @@ namespace Hatchyu\Modular\Console\Commands;
 use Hatchyu\Modular\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class RequestMakeCommand extends GeneratorCommand
+class ServiceMakeCommand extends GeneratorCommand
 {
-    protected $signature = 'module:make-request
+    protected $signature = 'module:make-service
                             {module : The name of the module}
-                            {name : The name of the FormRequest class}';
+                            {name : The name of the service class (e.g. OrderPricingService)}';
 
-    protected $description = 'Create a new FormRequest class inside Interface/Requests of a module';
+    protected $description = 'Create a new Application Service class inside Application/Services of a module';
 
     public function handle(): int
     {
@@ -23,11 +23,11 @@ class RequestMakeCommand extends GeneratorCommand
         $rawName = $this->argument('name');
         $className = Str::studly($rawName);
 
-        if (! Str::endsWith($className, 'Request')) {
-            $className .= 'Request';
+        if (! Str::endsWith($className, 'Service')) {
+            $className .= 'Service';
         }
 
-        $filePath = $module->getPath("Interface/Requests/{$className}.php");
+        $filePath = $module->getPath("Application/Services/{$className}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
@@ -35,10 +35,10 @@ class RequestMakeCommand extends GeneratorCommand
             'class' => $className,
         ];
 
-        $content = $this->replacePlaceholders($this->getStub('request'), $replacements);
+        $content = $this->replacePlaceholders($this->getStub('service'), $replacements);
 
         if ($this->writeFile($filePath, $content)) {
-            $this->components->info("Request [{$className}] created successfully at [{$filePath}].");
+            $this->components->info("Application Service [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
         }

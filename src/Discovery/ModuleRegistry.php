@@ -75,19 +75,19 @@ final class ModuleRegistry
 
     public function getCachePath(): string
     {
-        /** @var string $path */
+        /* @var string $path */
         return $this->config->get('modular.cache_path', base_path('bootstrap/cache/modules.php'));
     }
 
     public function getModulesPath(): string
     {
-        /** @var string $path */
+        /* @var string $path */
         return $this->config->get('modular.path', base_path('modules'));
     }
 
     public function getNamespace(): string
     {
-        /** @var string $namespace */
+        /* @var string $namespace */
         return $this->config->get('modular.namespace', 'Modules\\');
     }
 
