@@ -219,9 +219,9 @@ it('generates components in nested sub-namespaces with proper namespaces', funct
         '--api' => true,
     ])->assertSuccessful();
 
-    $nestedControllerFile = __DIR__ . '/../tmp/modules/Ordering/Interface/Controllers/Api/V1/V2/OrderController.php';
+    $nestedControllerFile = __DIR__ . '/../tmp/modules/Ordering/Interface/Controllers/Api/V2/OrderController.php';
     expect(file_exists($nestedControllerFile))->toBeTrue()
-        ->and(file_get_contents($nestedControllerFile))->toContain('namespace Modules\Ordering\Interface\Controllers\Api\V1\V2;')
+        ->and(file_get_contents($nestedControllerFile))->toContain('namespace Modules\Ordering\Interface\Controllers\Api\V2;')
         ->and(file_get_contents($nestedControllerFile))->toContain('class OrderController')
     ;
 });
@@ -289,5 +289,6 @@ it('executes module:check diagnostic command', function () {
     $this->artisan('module:make', ['name' => 'Analytics'])->assertSuccessful();
 
     $this->artisan('module:check')
-        ->assertSuccessful();
+        ->assertSuccessful()
+    ;
 });

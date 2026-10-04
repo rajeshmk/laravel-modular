@@ -19,15 +19,16 @@ final readonly class FactoryGuesser
 
                 if (Str::contains($after, '\\Domain\\Models\\')) {
                     $module = Str::before($after, '\\Domain\\Models\\');
+                    $relativeModel = Str::after($after, '\\Domain\\Models\\');
                 } elseif (Str::contains($after, '\\Models\\')) {
                     $module = Str::before($after, '\\Models\\');
+                    $relativeModel = Str::after($after, '\\Models\\');
                 } else {
                     $module = Str::before($after, '\\');
+                    $relativeModel = class_basename($modelName);
                 }
 
-                $modelBasename = class_basename($modelName);
-
-                return "{$cleanNamespace}{$module}\\Database\\Factories\\{$modelBasename}Factory";
+                return "{$cleanNamespace}{$module}\\Database\\Factories\\{$relativeModel}Factory";
             }
 
             return 'Database\\Factories\\' . class_basename($modelName) . 'Factory';

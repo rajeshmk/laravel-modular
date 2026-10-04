@@ -71,7 +71,11 @@ class ModuleMakeCommand extends GeneratorCommand
             'Database/Factories',
             'Database/Seeders',
 
-            // 6. Routes, Config & Views
+            // 6. Tests
+            'tests/Feature',
+            'tests/Unit',
+
+            // 7. Routes, Config & Views
             'routes',
             'config',
             'resources/views',
@@ -131,6 +135,8 @@ class ModuleMakeCommand extends GeneratorCommand
             'Database/Migrations',
             'Database/Factories',
             'Database/Seeders',
+            'tests/Feature',
+            'tests/Unit',
         ];
 
         foreach ($emptyDirs as $dir) {

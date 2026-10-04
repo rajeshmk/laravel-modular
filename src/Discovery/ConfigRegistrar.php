@@ -6,15 +6,22 @@ namespace Hatchyu\Modular\Discovery;
 
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Foundation\Application;
 
 final readonly class ConfigRegistrar
 {
     public function __construct(
-        private ConfigRepository $config
+        private ConfigRepository $config,
+        private ?Application $app = null
     ) {}
 
     public function register(ModuleRegistry $registry): void
     {
+        // Skip filesystem reads if Laravel global configuration is cached
+        if ($this->app !== null && method_exists($this->app, 'configurationIsCached') && $this->app->configurationIsCached()) {
+            return;
+        }
+
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasConfig()) {

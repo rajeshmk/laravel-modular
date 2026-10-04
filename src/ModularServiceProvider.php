@@ -54,7 +54,7 @@ class ModularServiceProvider extends ServiceProvider
 
         // 1. Auto-discover Module Configs early during registration
         if ((bool) $config->get('modular.autodiscover.configs', true)) {
-            (new ConfigRegistrar($config))->register($registry);
+            (new ConfigRegistrar($config, $this->app))->register($registry);
         }
 
         // 2. Register module service providers early in the registration lifecycle

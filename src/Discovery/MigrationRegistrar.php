@@ -18,12 +18,9 @@ final readonly class MigrationRegistrar
     {
         /** @var Module $module */
         foreach ($registry->all() as $module) {
-            $paths = array_unique(array_filter([
-                $module->getPath('Database/Migrations'),
-                $module->getPath('database/migrations'),
-            ], 'is_dir'));
+            if ($module->hasMigrations()) {
+                $path = $module->getMigrationsPath();
 
-            foreach ($paths as $path) {
                 /* @phpstan-ignore-next-line */
                 if (method_exists($this->app, 'loadMigrationsFrom')) {
                     $this->app->loadMigrationsFrom($path);

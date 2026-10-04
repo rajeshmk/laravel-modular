@@ -28,13 +28,21 @@ it('lists all modules via module:list', function () {
     ;
 });
 
-it('correctly guesses factory names for modular models in DDD and flat layouts', function () {
+it('correctly guesses factory names for modular models in DDD, nested, and flat layouts', function () {
     $guesser = new FactoryGuesser();
     $guesser->register('Modules\\');
 
-    // DDD 4-Layer layout
+    // Standard DDD 4-Layer layout
     $guessedDdd = Factory::resolveFactoryName('Modules\\Order\\Domain\\Models\\Order');
     expect($guessedDdd)->toBe('Modules\\Order\\Database\\Factories\\OrderFactory');
+
+    // Nested DDD model in sub-namespace
+    $guessedNested = Factory::resolveFactoryName('Modules\\Order\\Domain\\Models\\Relations\\OrderItem');
+    expect($guessedNested)->toBe('Modules\\Order\\Database\\Factories\\Relations\\OrderItemFactory');
+
+    // Deep nested DDD model
+    $guessedDeep = Factory::resolveFactoryName('Modules\\Customer\\Domain\\Models\\Address\\Sub\\CustomerAddress');
+    expect($guessedDeep)->toBe('Modules\\Customer\\Database\\Factories\\Address\\Sub\\CustomerAddressFactory');
 
     // Legacy flat layout
     $guessedFlat = Factory::resolveFactoryName('Modules\\Order\\Models\\Order');

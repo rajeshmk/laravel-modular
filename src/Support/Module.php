@@ -64,9 +64,19 @@ final readonly class Module
         return $this->getPath($base . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
     }
 
+    public function getTestsPath(?string $subPath = null): string
+    {
+        return $this->getPath('tests' . ($subPath !== null && $subPath !== '' ? DIRECTORY_SEPARATOR . ltrim($subPath, '/\\') : ''));
+    }
+
     public function getNamespace(?string $subNamespace = null): string
     {
-        $base = rtrim($this->namespace, '\\') . '\\' . $this->name;
+        $cleanRoot = rtrim($this->namespace, '\\');
+
+        // Prevent double module name if $this->namespace already includes it
+        $base = Str::endsWith($cleanRoot, '\\' . $this->name) || $cleanRoot === $this->name
+            ? $cleanRoot
+            : $cleanRoot . '\\' . $this->name;
 
         if ($subNamespace === null || $subNamespace === '') {
             return $base;
@@ -231,6 +241,15 @@ final readonly class Module
         return $this->getPath('config/config.php');
     }
 
+    public function hasTests(): bool
+    {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_tests'] ?? false);
+        }
+
+        return is_dir($this->getTestsPath());
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -240,7 +259,8 @@ final readonly class Module
             'name' => $this->name,
             'slug' => $this->getSlug(),
             'path' => $this->path,
-            'namespace' => $this->getNamespace(),
+            'namespace' => $this->namespace,
+            'module_namespace' => $this->getNamespace(),
             'provider' => $this->hasProvider() ? $this->getProviderClass() : null,
             'has_web_routes' => $this->hasWebRoutes(),
             'has_api_routes' => $this->hasApiRoutes(),
@@ -254,6 +274,7 @@ final readonly class Module
             'views_path' => $this->hasViews() ? $this->getViewsPath() : null,
             'has_config' => $this->hasConfig(),
             'config_path' => $this->hasConfig() ? $this->getConfigPath() : null,
+            'has_tests' => $this->hasTests(),
         ];
     }
 }

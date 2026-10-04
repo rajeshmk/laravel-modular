@@ -12,8 +12,9 @@ class ControllerMakeCommand extends GeneratorCommand
     protected $signature = 'module:make-controller
                             {module : The name of the module}
                             {name : The name of the controller class (e.g. OrderController or V2/OrderController)}
-                            {--api : Create an API controller in Interface/Controllers/Api/V1/}
+                            {--api : Create an API controller in Interface/Controllers/Api/}
                             {--admin : Create an Admin controller in Interface/Controllers/Admin/}
+                            {--api-version=1 : The API version to target (e.g. 1, 2, v1, v2)}
                             {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Controller class inside Interface/Controllers of a module';
@@ -35,13 +36,31 @@ class ControllerMakeCommand extends GeneratorCommand
 
         $stubName = 'controller';
         $baseDir = 'Interface/Controllers';
+        $version = 'V1';
 
         if ($isApi) {
             $stubName = 'controller.api';
-            $baseDir = 'Interface/Controllers/Api/V1';
+
+            /** @var string $versionOption */
+            $versionOption = (string) ($this->option('api-version') ?? '1');
+            $version = 'V' . ltrim(Str::upper($versionOption), 'V');
+
+            // If developer passed V2 or Api/V2 in class input, extract version cleanly
+            if (preg_match('#^(?:Api/)?(V\d+)(?:/(.*))?$#i', $relativeDir, $matches)) {
+                $version = Str::upper($matches[1]);
+                $relativeDir = $matches[2] ?? '';
+                $subNamespace = $relativeDir !== '' ? str_replace('/', '\\', $relativeDir) : '';
+            }
+
+            $baseDir = "Interface/Controllers/Api/{$version}";
         } elseif ($isAdmin) {
             $stubName = 'controller.admin';
             $baseDir = 'Interface/Controllers/Admin';
+
+            if (preg_match('#^Admin(?:/(.*))?$#i', $relativeDir, $matches)) {
+                $relativeDir = $matches[1] ?? '';
+                $subNamespace = $relativeDir !== '' ? str_replace('/', '\\', $relativeDir) : '';
+            }
         }
 
         $subPath = $relativeDir !== '' ? $baseDir . '/' . $relativeDir . '/' . $className : $baseDir . '/' . $className;
@@ -51,6 +70,7 @@ class ControllerMakeCommand extends GeneratorCommand
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'version' => $version,
             'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 

@@ -33,6 +33,7 @@ class ModuleCacheCommand extends Command
         $content = "<?php\n\ndeclare(strict_types=1);\n\n// Compiled module discovery cache\nreturn {$export};\n";
 
         file_put_contents($cachePath, $content);
+        $this->registry->flush();
 
         $count = count($modules);
         $this->components->info("Compiled discovery cache for {$count} module(s) into [{$cachePath}].");

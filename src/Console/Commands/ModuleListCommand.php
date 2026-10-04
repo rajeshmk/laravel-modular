@@ -34,19 +34,27 @@ class ModuleListCommand extends Command
         $this->components->info("Discovered {$modules->count()} module(s){$cached}:");
 
         $rows = $modules->map(function (Module $module): array {
+            $databaseParts = array_filter([
+                $module->hasMigrations() ? 'Migrations' : null,
+                $module->hasFactories() ? 'Factories' : null,
+                $module->hasSeeders() ? 'Seeders' : null,
+            ]);
+            $database = ! empty($databaseParts) ? implode(', ', $databaseParts) : '<comment>None</comment>';
+
             return [
                 'name' => $module->getName(),
                 'slug' => $module->getSlug(),
                 'provider' => $module->hasProvider() ? '<info>Registered</info>' : '<comment>None</comment>',
                 'routes' => ($module->hasWebRoutes() ? 'Web ' : '') . ($module->hasApiRoutes() ? 'API' : '') ?: '<comment>None</comment>',
-                'migrations' => $module->hasMigrations() ? '<info>Yes</info>' : '<comment>None</comment>',
+                'database' => $database,
+                'tests' => $module->hasTests() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'views' => $module->hasViews() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'config' => $module->hasConfig() ? '<info>Yes</info>' : '<comment>None</comment>',
             ];
         })->all();
 
         $this->table(
-            ['Module', 'Slug', 'Provider', 'Routes', 'Migrations', 'Views', 'Config'],
+            ['Module', 'Slug', 'Provider', 'Routes', 'Database', 'Tests', 'Views', 'Config'],
             $rows
         );
 
