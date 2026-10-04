@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Tests\{{type}}{{subNamespace}};
+
+use Tests\TestCase;
+
+class {{class}} extends TestCase
+{
+    public function test_it_performs_expected_behavior(): void
+    {
+        // TODO: Implement test assertions
+        $this->assertTrue(true);
+    }
+}

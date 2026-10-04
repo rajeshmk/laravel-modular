@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Interface\Controllers\Api\V1;
+namespace {{namespace}}\{{module}}\Interface\Controllers\Api\V1{{subNamespace}};
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

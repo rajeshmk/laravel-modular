@@ -38,13 +38,14 @@ final class ModuleRegistry
         $cachePath = $this->getCachePath();
 
         if (file_exists($cachePath)) {
-            /** @var array<int, array<string, string>> $cached */
+            /** @var array<int, array<string, mixed>> $cached */
             $cached = require $cachePath;
             $this->modules = collect($cached)->map(
                 fn (array $data): Module => new Module(
                     name: $data['name'],
                     path: $data['path'],
-                    namespace: $data['namespace']
+                    namespace: $data['namespace'],
+                    cachedData: $data
                 )
             );
 
@@ -97,11 +98,7 @@ final class ModuleRegistry
     public function toCacheArray(): array
     {
         return $this->discover()->map(
-            fn (Module $module): array => [
-                'name' => $module->getName(),
-                'path' => $module->getPath(),
-                'namespace' => $this->getNamespace(),
-            ]
+            fn (Module $module): array => $module->toArray()
         )->values()->all();
     }
 

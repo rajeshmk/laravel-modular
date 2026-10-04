@@ -37,10 +37,34 @@ abstract class GeneratorCommand extends Command
         );
     }
 
+    /**
+     * Parse class input and split into class name, sub-namespace, and relative directory path.
+     *
+     * @return array{0: string, 1: string, 2: string} [className, subNamespace, relativeDir]
+     */
+    protected function parseClassInput(string $input): array
+    {
+        $normalized = str_replace(['/', '\\'], '/', trim($input, '/\\'));
+        $parts = explode('/', $normalized);
+
+        $rawClass = array_pop($parts);
+        $className = Str::studly((string) $rawClass);
+
+        $studlyParts = array_map([Str::class, 'studly'], array_filter($parts));
+        $subNamespace = implode('\\', $studlyParts);
+        $relativeDir = implode(DIRECTORY_SEPARATOR, $studlyParts);
+
+        return [$className, $subNamespace, $relativeDir];
+    }
+
     protected function getStub(string $stubName): string
     {
         /** @var string|null $customPath */
         $customPath = config('modular.stubs_path');
+
+        if ($customPath === null && is_dir(base_path('stubs/modular'))) {
+            $customPath = base_path('stubs/modular');
+        }
 
         if ($customPath !== null && file_exists("{$customPath}/{$stubName}.stub")) {
             $content = file_get_contents("{$customPath}/{$stubName}.stub");
@@ -86,7 +110,7 @@ abstract class GeneratorCommand extends Command
     protected function writeFile(string $path, string $content, bool $force = false): bool
     {
         if (file_exists($path) && ! $force) {
-            $this->components->warn("File [{$path}] already exists.");
+            $this->components->warn("File [{$path}] already exists. Use --force to overwrite.");
 
             return false;
         }

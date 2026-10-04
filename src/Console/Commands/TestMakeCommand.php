@@ -7,14 +7,16 @@ namespace Hatchyu\Modular\Console\Commands;
 use Hatchyu\Modular\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class SeederMakeCommand extends GeneratorCommand
+class TestMakeCommand extends GeneratorCommand
 {
-    protected $signature = 'module:make-seeder
+    protected $signature = 'module:make-test
                             {module : The name of the module}
-                            {name : The name of the seeder class (e.g. CustomerSeeder or V1/CustomerSeeder)}
+                            {name : The name of the test class (e.g. OrderApiTest or V1/OrderApiTest)}
+                            {--unit : Create a unit test instead of a feature test}
+                            {--phpunit : Generate standard PHPUnit test instead of Pest}
                             {--force : Overwrite the file if it already exists}';
 
-    protected $description = 'Create a new Seeder class inside Database/Seeders of a module';
+    protected $description = 'Create a new Pest or PHPUnit test inside a module';
 
     public function handle(): int
     {
@@ -24,29 +26,30 @@ class SeederMakeCommand extends GeneratorCommand
         $rawName = $this->argument('name');
         [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
-        if (! Str::endsWith($className, 'Seeder')) {
-            $className .= 'Seeder';
+        if (! Str::endsWith($className, 'Test')) {
+            $className .= 'Test';
         }
 
-        $seederDir = is_dir($module->getPath('database/seeders')) && ! is_dir($module->getPath('Database/Seeders'))
-            ? 'database/seeders'
-            : 'Database/Seeders';
-
-        $subPath = $relativeDir !== '' ? $seederDir . '/' . $relativeDir . '/' . $className : $seederDir . '/' . $className;
+        $type = (bool) $this->option('unit') ? 'Unit' : 'Feature';
+        $subPath = $relativeDir !== '' ? "tests/{$type}/{$relativeDir}/{$className}" : "tests/{$type}/{$className}";
         $filePath = $module->getPath("{$subPath}.php");
+
+        $isPest = ! (bool) $this->option('phpunit');
+        $stubName = $isPest ? 'test.pest' : 'test.phpunit';
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'type' => $type,
             'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
-        $content = $this->replacePlaceholders($this->getStub('seeder'), $replacements);
+        $content = $this->replacePlaceholders($this->getStub($stubName), $replacements);
         $force = (bool) $this->option('force');
 
         if ($this->writeFile($filePath, $content, $force)) {
-            $this->components->info("Seeder [{$className}] created successfully at [{$filePath}].");
+            $this->components->info("Test [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
         }

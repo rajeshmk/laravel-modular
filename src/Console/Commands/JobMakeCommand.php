@@ -11,8 +11,9 @@ class JobMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-job
                             {module : The name of the module}
-                            {name : The name of the job class (e.g. SyncCustomerToCrmJob)}
-                            {--sync : Create a synchronous job that does not implement ShouldQueue}';
+                            {name : The name of the job class (e.g. SyncCustomerToCrmJob or V1/SyncCustomerToCrmJob)}
+                            {--sync : Create a synchronous job that does not implement ShouldQueue}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Queue Job inside Infrastructure/Jobs of a module';
 
@@ -22,24 +23,27 @@ class JobMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Job')) {
             $className .= 'Job';
         }
 
-        $filePath = $module->getPath("Infrastructure/Jobs/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Infrastructure/Jobs/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $stub = (bool) $this->option('sync') ? 'job.sync' : 'job';
         $content = $this->replacePlaceholders($this->getStub($stub), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Job [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

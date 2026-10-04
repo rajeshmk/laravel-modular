@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Database\Factories;
+namespace {{namespace}}\{{module}}\Database\Factories{{subNamespace}};
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use {{namespace}}\{{module}}\Domain\Models\{{model}};
+use {{namespace}}\{{module}}\Domain\Models{{subNamespace}}\{{model}};
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\{{namespace}}\{{module}}\Domain\Models\{{model}}>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\{{namespace}}\{{module}}\Domain\Models{{subNamespace}}\{{model}}>
  */
 class {{model}}Factory extends Factory
 {

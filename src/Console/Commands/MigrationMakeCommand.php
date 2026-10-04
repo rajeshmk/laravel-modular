@@ -11,7 +11,8 @@ class MigrationMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-migration
                             {module : The name of the module}
-                            {name : The name of the migration (e.g. create_orders_table)}';
+                            {name : The name of the migration (e.g. create_orders_table)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new database migration file inside Database/Migrations of a module';
 
@@ -95,7 +96,9 @@ class MigrationMakeCommand extends GeneratorCommand
                 PHP;
         }
 
-        if ($this->writeFile($filePath, $content)) {
+        $force = (bool) $this->option('force');
+
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Migration [{$fileName}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

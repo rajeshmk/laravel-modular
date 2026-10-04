@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Interface\Controllers\Admin;
+namespace {{namespace}}\{{module}}\Interface\Controllers\Admin{{subNamespace}};
 
 use Illuminate\Http\Request;
 

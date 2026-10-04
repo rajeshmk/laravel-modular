@@ -193,5 +193,101 @@ it('generates individual module components via cli into proper DDD layers', func
     ;
     $seederFile = __DIR__ . '/../tmp/modules/Catalog/Database/Seeders/ProductSeeder.php';
     expect(file_exists($seederFile))->toBeTrue()
-        ->and(file_get_contents($seederFile))->toContain('namespace Modules\Catalog\Database\Seeders;');
+        ->and(file_get_contents($seederFile))->toContain('namespace Modules\Catalog\Database\Seeders;')
+    ;
+});
+
+it('generates components in nested sub-namespaces with proper namespaces', function () {
+    $this->artisan('module:make', ['name' => 'Ordering'])->assertSuccessful();
+
+    // Nested Action: V1/CreateOrderAction
+    $this->artisan('module:make-action', [
+        'module' => 'Ordering',
+        'name' => 'V1/CreateOrderAction',
+    ])->assertSuccessful();
+
+    $nestedActionFile = __DIR__ . '/../tmp/modules/Ordering/Application/Actions/V1/CreateOrderAction.php';
+    expect(file_exists($nestedActionFile))->toBeTrue()
+        ->and(file_get_contents($nestedActionFile))->toContain('namespace Modules\Ordering\Application\Actions\V1;')
+        ->and(file_get_contents($nestedActionFile))->toContain('class CreateOrderAction')
+    ;
+
+    // Nested Controller: Api/V2/OrderController
+    $this->artisan('module:make-controller', [
+        'module' => 'Ordering',
+        'name' => 'V2/OrderController',
+        '--api' => true,
+    ])->assertSuccessful();
+
+    $nestedControllerFile = __DIR__ . '/../tmp/modules/Ordering/Interface/Controllers/Api/V1/V2/OrderController.php';
+    expect(file_exists($nestedControllerFile))->toBeTrue()
+        ->and(file_get_contents($nestedControllerFile))->toContain('namespace Modules\Ordering\Interface\Controllers\Api\V1\V2;')
+        ->and(file_get_contents($nestedControllerFile))->toContain('class OrderController')
+    ;
+});
+
+it('supports --force flag to overwrite existing generated files', function () {
+    $this->artisan('module:make', ['name' => 'Payments'])->assertSuccessful();
+
+    $actionPath = __DIR__ . '/../tmp/modules/Payments/Application/Actions/ProcessPaymentAction.php';
+
+    // 1. First generation
+    $this->artisan('module:make-action', [
+        'module' => 'Payments',
+        'name' => 'ProcessPaymentAction',
+    ])->assertSuccessful();
+
+    file_put_contents($actionPath, '// Custom modification');
+    expect(file_get_contents($actionPath))->toBe('// Custom modification');
+
+    // 2. Without force should not overwrite
+    $this->artisan('module:make-action', [
+        'module' => 'Payments',
+        'name' => 'ProcessPaymentAction',
+    ])->assertFailed();
+    expect(file_get_contents($actionPath))->toBe('// Custom modification');
+
+    // 3. With --force should overwrite
+    $this->artisan('module:make-action', [
+        'module' => 'Payments',
+        'name' => 'ProcessPaymentAction',
+        '--force' => true,
+    ])->assertSuccessful();
+    expect(file_get_contents($actionPath))->toContain('class ProcessPaymentAction');
+});
+
+it('generates pest and phpunit tests via module:make-test', function () {
+    $this->artisan('module:make', ['name' => 'Support'])->assertSuccessful();
+
+    // Pest Feature test
+    $this->artisan('module:make-test', [
+        'module' => 'Support',
+        'name' => 'TicketApiTest',
+    ])->assertSuccessful();
+
+    $pestTest = __DIR__ . '/../tmp/modules/Support/tests/Feature/TicketApiTest.php';
+    expect(file_exists($pestTest))->toBeTrue()
+        ->and(file_get_contents($pestTest))->toContain("it('performs expected Support behavior'")
+    ;
+
+    // PHPUnit Unit test
+    $this->artisan('module:make-test', [
+        'module' => 'Support',
+        'name' => 'TicketModelTest',
+        '--unit' => true,
+        '--phpunit' => true,
+    ])->assertSuccessful();
+
+    $unitTest = __DIR__ . '/../tmp/modules/Support/tests/Unit/TicketModelTest.php';
+    expect(file_exists($unitTest))->toBeTrue()
+        ->and(file_get_contents($unitTest))->toContain('namespace Modules\Support\Tests\Unit;')
+        ->and(file_get_contents($unitTest))->toContain('class TicketModelTest extends TestCase')
+    ;
+});
+
+it('executes module:check diagnostic command', function () {
+    $this->artisan('module:make', ['name' => 'Analytics'])->assertSuccessful();
+
+    $this->artisan('module:check')
+        ->assertSuccessful();
 });

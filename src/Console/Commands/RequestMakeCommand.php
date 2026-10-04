@@ -11,7 +11,8 @@ class RequestMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-request
                             {module : The name of the module}
-                            {name : The name of the FormRequest class}';
+                            {name : The name of the FormRequest class (e.g. StoreOrderRequest or V1/StoreOrderRequest)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new FormRequest class inside Interface/Requests of a module';
 
@@ -21,23 +22,26 @@ class RequestMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Request')) {
             $className .= 'Request';
         }
 
-        $filePath = $module->getPath("Interface/Requests/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Interface/Requests/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('request'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Request [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

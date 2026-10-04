@@ -10,11 +10,14 @@ A high-performance, zero-boilerplate **Domain-Driven Design (DDD) 4-Layer Modula
 
 ## Key Features
 
-- 🚀 **Zero-Boilerplate Auto-Discovery:** Automatically discovers module service providers, routes (`web.php` & `api.php`), database migrations, namespaced views, and configs.
+- 🚀 **Zero-Boilerplate Auto-Discovery:** Automatically discovers module configs, service providers, routes (`web.php` & `api.php`), database migrations, and namespaced views.
 - 🏛️ **DDD 4-Layer Architecture:** Cleanly partitions modules into `Domain/`, `Application/`, `Interface/`, `Infrastructure/`, and `Database/`.
-- ⚡ **Production Performance Caching:** Built-in `php artisan module:cache` eliminates runtime filesystem scans in production for 0ms overhead.
-- 🛠️ **Full-Featured Artisan CLI:** Generators for Domain Models, Policies, Enums, Events, CQRS Actions (writes), Queries (reads), DTOs (`Data`), Rules, Services, Thin Controllers, Requests, Resources, Jobs, Migrations, and Seeders.
+- ⚡ **True 0ms Production Performance:** Built-in `php artisan module:cache` compiles full discovery manifests, completely eliminating runtime filesystem syscalls in production.
+- 🛠️ **Full-Featured Artisan CLI:** Generators for Domain Models, Policies, Enums, Events, CQRS Actions (writes), Queries (reads), DTOs (`Data`), Rules, Services, Thin Controllers, Requests, Resources, Jobs, Tests, Migrations, and Seeders.
+- 🗂️ **Nested Sub-Namespace Support:** Seamlessly generate components into subdirectories (e.g. `V1/CreateOrderAction`, `Api/V2/OrderController`, `Relations/OrderItem`).
+- 🔄 **Overwrite Protection & `--force`:** Standard `--force` option across all generator commands.
 - 🏭 **Smart Factory Guesser:** Automatically resolves Eloquent model factories located inside `Modules\{Module}\Database\Factories`.
+- 🩺 **Diagnostic Health Checks:** `php artisan module:check` validates PSR-4 mappings, directory permissions, and service provider readiness.
 - 🧩 **Non-Invasive & Standards-Compliant:** Adheres to modern PHP 8.4+ and strict typing standards without vendor lock-in.
 
 ---
@@ -57,6 +60,10 @@ modules/{ModuleName}/
 │   ├── Migrations/                 # Module Migrations
 │   ├── Factories/                  # Model Factories
 │   └── Seeders/                    # Module Seeders
+│
+├── tests/                          # Module Tests
+│   ├── Feature/                    # Feature & Integration Tests
+│   └── Unit/                       # Unit Tests
 │
 ├── routes/                         # Module Route Definitions
 │   ├── api.php                     # API routes
@@ -152,12 +159,15 @@ return [
         'api_prefix' => 'api',
     ],
     'cache_path' => base_path('bootstrap/cache/modules.php'),
+    'stubs_path' => null,
 ];
 ```
 
 ---
 
 ## Artisan CLI Commands
+
+All generator commands support nested sub-namespaces (e.g. `V1/CreateOrderAction`) and `{--force}` to overwrite existing files.
 
 ### Scaffolding a Complete Module
 Scaffold an entire DDD 4-layer module:
@@ -170,6 +180,7 @@ php artisan module:make Order
 ```bash
 # Eloquent Model (with optional migration & factory)
 php artisan module:make-model Order Order -m -f
+php artisan module:make-model Order Relations/OrderItem -m -f
 
 # Authorization Policy
 php artisan module:make-policy Order OrderPolicy --model=Order
@@ -185,6 +196,7 @@ php artisan module:make-event Order OrderPlacedEvent
 ```bash
 # CQRS Write Action
 php artisan module:make-action Order CreateOrderAction
+php artisan module:make-action Order V1/CreateOrderAction --force
 
 # CQRS Read Query
 php artisan module:make-query Order GetOrderListQuery
@@ -206,6 +218,7 @@ php artisan module:make-service Order OrderCalculationService
 php artisan module:make-controller Order OrderController
 php artisan module:make-controller Order OrderController --api
 php artisan module:make-controller Order OrderController --admin
+php artisan module:make-controller Order V2/OrderController --api
 
 # Form Request
 php artisan module:make-request Order StoreOrderRequest
@@ -232,13 +245,28 @@ php artisan module:make-migration Order create_orders_table
 php artisan module:make-seeder Order OrderSeeder
 ```
 
-### Inspection & Optimization Commands
+### Test Generators
+```bash
+# Pest Feature Test (default)
+php artisan module:make-test Order OrderApiTest
+
+# Pest Unit Test
+php artisan module:make-test Order CalculateTotalTest --unit
+
+# PHPUnit Test
+php artisan module:make-test Order OrderApiTest --phpunit
+```
+
+### Inspection, Diagnostics & Optimization Commands
 
 ```bash
+# Verify PSR-4 mappings, permissions, and module health
+php artisan module:check
+
 # List all detected modules and their status
 php artisan module:list
 
-# Compile module discovery manifest for production
+# Compile module discovery manifest for 0ms production performance
 php artisan module:cache
 
 # Clear compiled module discovery cache
@@ -258,7 +286,7 @@ php artisan view:cache
 php artisan module:cache
 ```
 
-This compiles all module paths and configurations into `bootstrap/cache/modules.php`, eliminating filesystem scanning completely.
+This compiles all module discovery paths, routes, and presence flags into `bootstrap/cache/modules.php`, eliminating filesystem scanning completely.
 
 ---
 

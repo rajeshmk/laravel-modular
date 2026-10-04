@@ -6,8 +6,7 @@ namespace Hatchyu\Modular\Discovery;
 
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Contracts\Routing\Registrar as Router;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Router;
 
 final readonly class RouteRegistrar
 {
@@ -30,11 +29,11 @@ final readonly class RouteRegistrar
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasWebRoutes()) {
-                Route::middleware($webMiddleware)->group($module->getWebRoutesPath());
+                $this->router->middleware($webMiddleware)->group($module->getWebRoutesPath());
             }
 
             if ($module->hasApiRoutes()) {
-                $route = Route::middleware($apiMiddleware);
+                $route = $this->router->middleware($apiMiddleware);
                 if ($apiPrefix !== null && $apiPrefix !== '') {
                     $route = $route->prefix($apiPrefix);
                 }

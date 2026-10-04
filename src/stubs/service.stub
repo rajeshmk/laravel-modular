@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Application\Services;
+namespace {{namespace}}\{{module}}\Application\Services{{subNamespace}};
 
 class {{class}}
 {

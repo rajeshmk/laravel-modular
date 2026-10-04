@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Hatchyu\Modular\Console\Commands;
 
 use Hatchyu\Modular\Console\GeneratorCommand;
-use Illuminate\Support\Str;
 
 class DataMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-data
                             {module : The name of the module}
-                            {name : The name of the Data class (e.g. CreateCustomerData or OrderData)}';
+                            {name : The name of the Data class (e.g. CreateCustomerData or V1/CreateCustomerData)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Application Data transfer object inside Application/Data of a module';
 
@@ -21,19 +21,22 @@ class DataMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
-        $filePath = $module->getPath("Application/Data/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Application/Data/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('data'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Data object [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

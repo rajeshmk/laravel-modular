@@ -11,9 +11,10 @@ class ControllerMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-controller
                             {module : The name of the module}
-                            {name : The name of the controller class}
+                            {name : The name of the controller class (e.g. OrderController or V2/OrderController)}
                             {--api : Create an API controller in Interface/Controllers/Api/V1/}
-                            {--admin : Create an Admin controller in Interface/Controllers/Admin/}';
+                            {--admin : Create an Admin controller in Interface/Controllers/Admin/}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Controller class inside Interface/Controllers of a module';
 
@@ -23,7 +24,7 @@ class ControllerMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Controller')) {
             $className .= 'Controller';
@@ -33,27 +34,30 @@ class ControllerMakeCommand extends GeneratorCommand
         $isAdmin = (bool) $this->option('admin');
 
         $stubName = 'controller';
-        $subDir = 'Interface/Controllers';
+        $baseDir = 'Interface/Controllers';
 
         if ($isApi) {
             $stubName = 'controller.api';
-            $subDir = 'Interface/Controllers/Api/V1';
+            $baseDir = 'Interface/Controllers/Api/V1';
         } elseif ($isAdmin) {
             $stubName = 'controller.admin';
-            $subDir = 'Interface/Controllers/Admin';
+            $baseDir = 'Interface/Controllers/Admin';
         }
 
-        $filePath = $module->getPath("{$subDir}/{$className}.php");
+        $subPath = $relativeDir !== '' ? $baseDir . '/' . $relativeDir . '/' . $className : $baseDir . '/' . $className;
+        $filePath = $module->getPath("{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub($stubName), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Controller [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

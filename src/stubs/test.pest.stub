@@ -1,0 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+it('performs expected {{module}} behavior', function () {
+    // TODO: Implement test assertions
+    expect(true)->toBeTrue();
+});

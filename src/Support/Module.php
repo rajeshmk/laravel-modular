@@ -8,10 +8,14 @@ use Illuminate\Support\Str;
 
 final readonly class Module
 {
+    /**
+     * @param array<string, mixed>|null $cachedData
+     */
     public function __construct(
         private string $name,
         private string $path,
-        private string $namespace
+        private string $namespace,
+        private ?array $cachedData = null
     ) {}
 
     public function getName(): string
@@ -73,6 +77,10 @@ final readonly class Module
 
     public function hasProvider(): bool
     {
+        if ($this->cachedData !== null) {
+            return ($this->cachedData['provider'] ?? null) !== null;
+        }
+
         return file_exists($this->getProviderPath());
     }
 
@@ -83,11 +91,19 @@ final readonly class Module
 
     public function getProviderClass(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['provider'])) {
+            return (string) $this->cachedData['provider'];
+        }
+
         return $this->getNamespace("{$this->name}ServiceProvider");
     }
 
     public function hasWebRoutes(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_web_routes'] ?? false);
+        }
+
         return file_exists($this->getWebRoutesPath());
     }
 
@@ -98,6 +114,10 @@ final readonly class Module
 
     public function hasApiRoutes(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_api_routes'] ?? false);
+        }
+
         return file_exists($this->getApiRoutesPath());
     }
 
@@ -108,11 +128,19 @@ final readonly class Module
 
     public function hasMigrations(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_migrations'] ?? false);
+        }
+
         return is_dir($this->getMigrationsPath());
     }
 
     public function getMigrationsPath(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['migrations_path'])) {
+            return (string) $this->cachedData['migrations_path'];
+        }
+
         $capitalized = $this->getPath('Database/Migrations');
         if (is_dir($capitalized)) {
             return $capitalized;
@@ -123,11 +151,19 @@ final readonly class Module
 
     public function hasFactories(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_factories'] ?? false);
+        }
+
         return is_dir($this->getFactoriesPath());
     }
 
     public function getFactoriesPath(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['factories_path'])) {
+            return (string) $this->cachedData['factories_path'];
+        }
+
         $capitalized = $this->getPath('Database/Factories');
         if (is_dir($capitalized)) {
             return $capitalized;
@@ -138,11 +174,19 @@ final readonly class Module
 
     public function hasSeeders(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_seeders'] ?? false);
+        }
+
         return is_dir($this->getSeedersPath());
     }
 
     public function getSeedersPath(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['seeders_path'])) {
+            return (string) $this->cachedData['seeders_path'];
+        }
+
         $capitalized = $this->getPath('Database/Seeders');
         if (is_dir($capitalized)) {
             return $capitalized;
@@ -153,21 +197,37 @@ final readonly class Module
 
     public function hasViews(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_views'] ?? false);
+        }
+
         return is_dir($this->getViewsPath());
     }
 
     public function getViewsPath(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['views_path'])) {
+            return (string) $this->cachedData['views_path'];
+        }
+
         return $this->getPath('resources/views');
     }
 
     public function hasConfig(): bool
     {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_config'] ?? false);
+        }
+
         return file_exists($this->getConfigPath());
     }
 
     public function getConfigPath(): string
     {
+        if ($this->cachedData !== null && isset($this->cachedData['config_path'])) {
+            return (string) $this->cachedData['config_path'];
+        }
+
         return $this->getPath('config/config.php');
     }
 
@@ -185,10 +245,15 @@ final readonly class Module
             'has_web_routes' => $this->hasWebRoutes(),
             'has_api_routes' => $this->hasApiRoutes(),
             'has_migrations' => $this->hasMigrations(),
+            'migrations_path' => $this->hasMigrations() ? $this->getMigrationsPath() : null,
             'has_factories' => $this->hasFactories(),
+            'factories_path' => $this->hasFactories() ? $this->getFactoriesPath() : null,
             'has_seeders' => $this->hasSeeders(),
+            'seeders_path' => $this->hasSeeders() ? $this->getSeedersPath() : null,
             'has_views' => $this->hasViews(),
+            'views_path' => $this->hasViews() ? $this->getViewsPath() : null,
             'has_config' => $this->hasConfig(),
+            'config_path' => $this->hasConfig() ? $this->getConfigPath() : null,
         ];
     }
 }

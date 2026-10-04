@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Domain\Enums;
+namespace {{namespace}}\{{module}}\Domain\Enums{{subNamespace}};
 
 enum {{class}}: string
 {

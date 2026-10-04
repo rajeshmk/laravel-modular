@@ -18,12 +18,15 @@ final readonly class ConfigRegistrar
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasConfig()) {
-                /** @var array<string, mixed> $moduleConfig */
+                /** @var mixed $moduleConfig */
                 $moduleConfig = require $module->getConfigPath();
-                $key = $module->getSlug();
+                if (! is_array($moduleConfig)) {
+                    continue;
+                }
 
+                $key = $module->getSlug();
                 $current = (array) $this->config->get($key, []);
-                $this->config->set($key, array_merge($moduleConfig, $current));
+                $this->config->set($key, array_replace_recursive($moduleConfig, $current));
             }
         }
     }

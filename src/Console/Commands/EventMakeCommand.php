@@ -11,7 +11,8 @@ class EventMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-event
                             {module : The name of the module}
-                            {name : The name of the event class (e.g. OrderPlacedEvent)}';
+                            {name : The name of the event class (e.g. OrderPlacedEvent or V1/OrderPlacedEvent)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Domain Event class inside Domain/Events of a module';
 
@@ -21,23 +22,26 @@ class EventMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Event')) {
             $className .= 'Event';
         }
 
-        $filePath = $module->getPath("Domain/Events/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Domain/Events/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('event'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Domain Event [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

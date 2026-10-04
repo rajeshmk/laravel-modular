@@ -14,6 +14,7 @@ use Hatchyu\Modular\Console\Commands\JobMakeCommand;
 use Hatchyu\Modular\Console\Commands\MigrationMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
+use Hatchyu\Modular\Console\Commands\ModuleCheckCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
@@ -24,6 +25,7 @@ use Hatchyu\Modular\Console\Commands\ResourceMakeCommand;
 use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
 use Hatchyu\Modular\Console\Commands\SeederMakeCommand;
 use Hatchyu\Modular\Console\Commands\ServiceMakeCommand;
+use Hatchyu\Modular\Console\Commands\TestMakeCommand;
 use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
 use Hatchyu\Modular\Discovery\MigrationRegistrar;
@@ -44,13 +46,21 @@ class ModularServiceProvider extends ServiceProvider
             return new ModuleRegistry($app->make(ConfigRepository::class));
         });
 
-        // Register module service providers early in the registration lifecycle
         /** @var ConfigRepository $config */
         $config = $this->app->make(ConfigRepository::class);
 
+        /** @var ModuleRegistry $registry */
+        $registry = $this->app->make(ModuleRegistry::class);
+
+        // 1. Auto-discover Module Configs early during registration
+        if ((bool) $config->get('modular.autodiscover.configs', true)) {
+            (new ConfigRegistrar($config))->register($registry);
+        }
+
+        // 2. Register module service providers early in the registration lifecycle
         if ((bool) $config->get('modular.autodiscover.providers', true)) {
             $providerRegistrar = new ProviderRegistrar($this->app);
-            $providerRegistrar->register($this->app->make(ModuleRegistry::class));
+            $providerRegistrar->register($registry);
         }
     }
 
@@ -88,8 +98,10 @@ class ModularServiceProvider extends ServiceProvider
                 RuleMakeCommand::class,
                 ServiceMakeCommand::class,
                 SeederMakeCommand::class,
+                TestMakeCommand::class,
                 MigrationMakeCommand::class,
                 ModuleListCommand::class,
+                ModuleCheckCommand::class,
                 ModuleCacheCommand::class,
                 ModuleClearCommand::class,
             ]);
@@ -113,11 +125,6 @@ class ModularServiceProvider extends ServiceProvider
         // Auto-discover Module Views
         if ((bool) $config->get('modular.autodiscover.views', true) && $this->app->bound('view')) {
             (new ViewRegistrar($this->app->make('view')))->register($registry);
-        }
-
-        // Auto-discover Module Configs
-        if ((bool) $config->get('modular.autodiscover.configs', true)) {
-            (new ConfigRegistrar($config))->register($registry);
         }
     }
 }

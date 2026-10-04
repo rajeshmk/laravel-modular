@@ -11,7 +11,8 @@ class QueryMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-query
                             {module : The name of the module}
-                            {name : The name of the query class (e.g. GetOrderListQuery)}';
+                            {name : The name of the query class (e.g. GetOrderListQuery or V1/GetOrderListQuery)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Query class inside Application/Queries of a module';
 
@@ -21,23 +22,26 @@ class QueryMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Query')) {
             $className .= 'Query';
         }
 
-        $filePath = $module->getPath("Application/Queries/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Application/Queries/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('query'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Query [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

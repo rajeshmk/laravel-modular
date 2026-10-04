@@ -11,7 +11,8 @@ class ServiceMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-service
                             {module : The name of the module}
-                            {name : The name of the service class (e.g. OrderPricingService)}';
+                            {name : The name of the service class (e.g. OrderPricingService or V1/OrderPricingService)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Application Service class inside Application/Services of a module';
 
@@ -21,23 +22,26 @@ class ServiceMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Service')) {
             $className .= 'Service';
         }
 
-        $filePath = $module->getPath("Application/Services/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Application/Services/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('service'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Application Service [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

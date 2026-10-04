@@ -11,7 +11,8 @@ class RuleMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-rule
                             {module : The name of the module}
-                            {name : The name of the validation rule class (e.g. ValidPhoneNumberRule)}';
+                            {name : The name of the validation rule class (e.g. ValidPhoneNumberRule or V1/ValidPhoneNumberRule)}
+                            {--force : Overwrite the file if it already exists}';
 
     protected $description = 'Create a new Validation Rule class inside Application/Rules of a module';
 
@@ -21,23 +22,26 @@ class RuleMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
         if (! Str::endsWith($className, 'Rule')) {
             $className .= 'Rule';
         }
 
-        $filePath = $module->getPath("Application/Rules/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Application/Rules/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
         $content = $this->replacePlaceholders($this->getStub('rule'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Validation Rule [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
