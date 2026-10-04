@@ -40,7 +40,8 @@ class PolicyMakeCommand extends GeneratorCommand
 
         $modelImport = '';
         if ($modelName !== '') {
-            $modelImport = "use {$this->registry->getNamespace()}{$module->getName()}\\Domain\\Models\\{$modelName};";
+            $sub = $subNamespace !== '' ? "\\{$subNamespace}" : '';
+            $modelImport = "use {$this->registry->getNamespace()}{$module->getName()}\\Domain\\Models{$sub}\\{$modelName};";
         }
 
         $replacements = [

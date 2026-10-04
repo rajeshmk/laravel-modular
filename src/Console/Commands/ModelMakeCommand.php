@@ -47,10 +47,14 @@ class ModelMakeCommand extends GeneratorCommand
 
         if ((bool) $this->option('migration')) {
             $tableName = Str::snake(Str::pluralStudly($className));
-            $this->call('module:make-migration', [
+            $params = [
                 'module' => $module->getName(),
                 'name' => "create_{$tableName}_table",
-            ]);
+            ];
+            if ($force) {
+                $params['--force'] = true;
+            }
+            $this->call('module:make-migration', $params);
         }
 
         if ((bool) $this->option('factory')) {

@@ -35,12 +35,15 @@ class ModuleCheckCommand extends Command
             $this->components->twoColumnDetail('Modules Directory', "<info>{$modulesPath}</info>");
         }
 
-        // 2. Check composer.json PSR-4 mapping
+        // 2. Check composer.json PSR-4 mapping (supports both autoload and autoload-dev)
         $composerJsonPath = base_path('composer.json');
         if (file_exists($composerJsonPath)) {
             /** @var array<string, mixed>|null $composerData */
             $composerData = json_decode((string) file_get_contents($composerJsonPath), true);
-            $psr4 = $composerData['autoload']['psr-4'] ?? [];
+            $psr4 = array_merge(
+                (array) ($composerData['autoload']['psr-4'] ?? []),
+                (array) ($composerData['autoload-dev']['psr-4'] ?? [])
+            );
             $expectedNamespace = $this->registry->getNamespace();
 
             if (isset($psr4[$expectedNamespace])) {

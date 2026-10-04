@@ -292,3 +292,20 @@ it('executes module:check diagnostic command', function () {
         ->assertSuccessful()
     ;
 });
+
+it('generates policies for nested models with correct model imports', function () {
+    $this->artisan('module:make', ['name' => 'Inventory'])->assertSuccessful();
+
+    $this->artisan('module:make-policy', [
+        'module' => 'Inventory',
+        'name' => 'Relations/StockItemPolicy',
+        '--model' => 'StockItem',
+    ])->assertSuccessful();
+
+    $policyFile = __DIR__ . '/../tmp/modules/Inventory/Domain/Policies/Relations/StockItemPolicy.php';
+    expect(file_exists($policyFile))->toBeTrue()
+        ->and(file_get_contents($policyFile))->toContain('namespace Modules\Inventory\Domain\Policies\Relations;')
+        ->and(file_get_contents($policyFile))->toContain('use Modules\Inventory\Domain\Models\Relations\StockItem;')
+        ->and(file_get_contents($policyFile))->toContain('class StockItemPolicy')
+    ;
+});

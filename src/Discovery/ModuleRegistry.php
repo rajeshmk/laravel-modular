@@ -7,6 +7,7 @@ namespace Hatchyu\Modular\Discovery;
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 final class ModuleRegistry
 {
@@ -61,6 +62,7 @@ final class ModuleRegistry
     {
         return $this->all()->first(
             fn (Module $module): bool => strcasecmp($module->getName(), $name) === 0
+                || strcasecmp($module->getSlug(), $name) === 0
         );
     }
 
@@ -121,9 +123,17 @@ final class ModuleRegistry
             return collect();
         }
 
+        /** @var array<int, string> $ignored */
+        $ignored = (array) $this->config->get('modular.ignore', ['node_modules', 'vendor', '.git']);
+
         return collect($directories)
-            ->map(function (string $dir): Module {
-                $name = basename($dir);
+            ->map(fn (string $dir): string => basename($dir))
+            ->filter(fn (string $name): bool => ! Str::startsWith($name, '.')
+                && ! in_array($name, $ignored, true)
+                && preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $name) === 1
+            )
+            ->map(function (string $name) use ($basePath): Module {
+                $dir = $basePath . DIRECTORY_SEPARATOR . $name;
 
                 return new Module(
                     name: $name,

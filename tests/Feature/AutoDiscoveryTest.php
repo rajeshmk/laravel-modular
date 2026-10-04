@@ -59,3 +59,51 @@ it('creates and checks migration file for module in Database/Migrations', functi
     $migrations = glob(__DIR__ . '/../tmp/modules/Finance/Database/Migrations/*_create_invoices_table.php');
     expect($migrations)->toHaveCount(1);
 });
+
+it('finds modules by studly name and by kebab slug', function () {
+    $this->artisan('module:make', ['name' => 'RealEstate'])->assertSuccessful();
+
+    $registry = app(ModuleRegistry::class);
+
+    expect($registry->find('RealEstate'))->not->toBeNull()
+        ->and($registry->find('real-estate'))->not->toBeNull()
+        ->and($registry->find('real-estate')?->getName())->toBe('RealEstate')
+        ->and($registry->find('non-existent'))->toBeNull()
+    ;
+});
+
+it('filters out ignored directories and dotfiles during discovery', function () {
+    $modulesPath = config('modular.path');
+    mkdir($modulesPath . '/node_modules', 0o755, true);
+    mkdir($modulesPath . '/.cache', 0o755, true);
+
+    $registry = app(ModuleRegistry::class);
+    $registry->flush();
+
+    expect($registry->has('node_modules'))->toBeFalse()
+        ->and($registry->has('.cache'))->toBeFalse()
+    ;
+});
+
+it('prevents accidental duplicate migration creation without --force', function () {
+    $this->artisan('module:make', ['name' => 'Warehouse'])->assertSuccessful();
+
+    // 1. Initial creation
+    $this->artisan('module:make-migration', [
+        'module' => 'Warehouse',
+        'name' => 'create_pallets_table',
+    ])->assertSuccessful();
+
+    // 2. Duplicate without force should fail
+    $this->artisan('module:make-migration', [
+        'module' => 'Warehouse',
+        'name' => 'create_pallets_table',
+    ])->assertFailed();
+
+    // 3. Duplicate with force should succeed
+    $this->artisan('module:make-migration', [
+        'module' => 'Warehouse',
+        'name' => 'create_pallets_table',
+        '--force' => true,
+    ])->assertSuccessful();
+});

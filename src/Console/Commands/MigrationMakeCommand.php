@@ -23,13 +23,25 @@ class MigrationMakeCommand extends GeneratorCommand
         /** @var string $rawName */
         $rawName = $this->argument('name');
         $migrationName = Str::snake(trim($rawName));
-
-        $timestamp = date('Y_m_d_His');
-        $fileName = "{$timestamp}_{$migrationName}.php";
+        $force = (bool) $this->option('force');
 
         $migrationDir = is_dir($module->getPath('database/migrations')) && ! is_dir($module->getPath('Database/Migrations'))
             ? 'database/migrations'
             : 'Database/Migrations';
+
+        $existingFiles = glob($module->getPath("{$migrationDir}/*_{$migrationName}.php")) ?: [];
+
+        if (! empty($existingFiles) && ! $force) {
+            $existingFile = basename($existingFiles[0]);
+            $this->components->warn("Migration for [{$migrationName}] already exists at [{$existingFile}]. Use --force to overwrite.");
+
+            return self::FAILURE;
+        }
+
+        $timestamp = date('Y_m_d_His');
+        $fileName = ! empty($existingFiles) && $force
+            ? basename($existingFiles[0])
+            : "{$timestamp}_{$migrationName}.php";
 
         $filePath = $module->getPath("{$migrationDir}/{$fileName}");
 
@@ -95,8 +107,6 @@ class MigrationMakeCommand extends GeneratorCommand
                 };
                 PHP;
         }
-
-        $force = (bool) $this->option('force');
 
         if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Migration [{$fileName}] created successfully at [{$filePath}].");
