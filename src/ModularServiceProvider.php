@@ -20,7 +20,9 @@ use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCheckCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
+use Hatchyu\Modular\Console\Commands\ModuleDisableCommand;
 use Hatchyu\Modular\Console\Commands\ModuleDoctorCommand;
+use Hatchyu\Modular\Console\Commands\ModuleEnableCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleRenameCommand;
@@ -123,6 +125,8 @@ class ModularServiceProvider extends ServiceProvider
                 ModuleListCommand::class,
                 ModuleCheckCommand::class,
                 ModuleDoctorCommand::class,
+                ModuleEnableCommand::class,
+                ModuleDisableCommand::class,
                 ModuleRenameCommand::class,
                 ModuleCacheCommand::class,
                 ModuleClearCommand::class,

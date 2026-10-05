@@ -21,7 +21,7 @@ final readonly class CommandRegistrar
         $discovered = [];
 
         /** @var Module $module */
-        foreach ($registry->all() as $module) {
+        foreach ($registry->enabled() as $module) {
             foreach ($module->getCommandClasses() as $commandClass) {
                 $discovered[] = $commandClass;
             }

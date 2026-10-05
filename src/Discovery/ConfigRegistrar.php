@@ -24,7 +24,7 @@ final readonly class ConfigRegistrar
         }
 
         /** @var Module $module */
-        foreach ($registry->all() as $module) {
+        foreach ($registry->enabled() as $module) {
             if ($module->hasConfig()) {
                 /** @var mixed $moduleConfig */
                 $moduleConfig = require $module->getConfigPath();

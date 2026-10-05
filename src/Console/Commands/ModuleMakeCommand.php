@@ -99,6 +99,16 @@ class ModuleMakeCommand extends GeneratorCommand
             'slug' => $module->getSlug(),
         ];
 
+        // 0. Module Manifest
+        $manifest = [
+            'name' => $moduleName,
+            'description' => "{$moduleName} module",
+            'version' => '1.0.0',
+            'enabled' => true,
+            'dependencies' => [],
+        ];
+        $this->writeFile($module->getManifestPath(), json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL, $force);
+
         // 1. Service Provider
         $providerContent = $this->replacePlaceholders($this->getStub('provider'), $replacements);
         $this->writeFile($module->getProviderPath(), $providerContent, $force);

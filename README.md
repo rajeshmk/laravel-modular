@@ -27,6 +27,10 @@ Whether you are architecting an **ERP, CRM, Banking platform, Healthcare system,
 - 🔄 **Overwrite Protection & `--force`:** Standard `--force` option across all generator commands.
 - 🏭 **Smart Factory Guesser:** Automatically resolves Eloquent model factories located inside `Modules\{Module}\Database\Factories`.
 - 🩺 **Diagnostic Health Checks:** `php artisan module:check` validates PSR-4 mappings, directory permissions, and service provider readiness.
+- 🔌 **Module Enable / Disable & Manifests:** Toggle individual modules on or off dynamically (`php artisan module:enable` / `module:disable`) via local `module.json` manifests.
+- 🕸️ **Topological Dependency Boot Graph:** Declare module dependencies (`"dependencies": ["Billing"]`). Boots modules in strict topological order (Kahn's algorithm), guaranteeing dependencies are ready before dependents boot.
+- 🛡️ **Fail-Safe Dependency Guardrails:** Runtime protection and CLI guardrails prevent broken states when dependencies are disabled or missing, with actionable repair instructions.
+- 🔄 **Safe Module Renaming Propagation:** `php artisan module:rename` refactors directories, namespaces, providers, seeders, views, and updates dependency declarations across all other modules.
 - 🧩 **Non-Invasive & Standards-Compliant:** Adheres to modern PHP 8.4+ and strict typing standards without vendor lock-in.
 
 ---
@@ -171,6 +175,89 @@ return [
     'stubs_path' => null,
 ];
 ```
+
+---
+
+## Module Lifecycle & Dependency Management
+
+Every module can contain a local `module.json` manifest located at `modules/{ModuleName}/module.json` (automatically generated when running `php artisan module:make`):
+
+```json
+{
+    "name": "Order",
+    "description": "Order processing domain module",
+    "version": "1.0.0",
+    "enabled": true,
+    "dependencies": [
+        "Billing",
+        "Customer"
+    ],
+    "priority": 0
+}
+```
+
+### Enabling & Disabling Modules
+You can toggle modules on or off without deleting files or altering git history:
+
+```bash
+# Enable a module
+php artisan module:enable Billing
+
+# Disable a module
+php artisan module:disable Billing
+```
+
+Disabled modules are completely excluded from service provider registration, route loading, database migrations, command discovery, view namespaces, and configuration merging.
+
+### Dependency Resolution & Topological Booting
+When modules declare dependencies in `module.json`:
+- **Topological Boot Order:** The system resolves the dependency graph using Kahn's algorithm so prerequisite modules (e.g. `Billing`) always boot **before** dependent modules (e.g. `Order`).
+- **Circular Dependency Detection:** Detects any circular dependency loops (e.g. `A -> B -> A`) and throws an explicit `ModuleDependencyException` identifying the loop.
+
+### How Disabled or Missing Dependencies Are Handled
+When a module depends on another module that is disabled or missing, the system handles it with clarity and safety:
+
+1. **At Application Boot Time:**
+   If `Order` is enabled but depends on disabled `Billing`, `ModuleRegistry::enabled()` halts execution with an actionable exception:
+   ```
+   ModuleDependencyException: Module [Order] depends on module [Billing], but [Billing] is currently disabled. Enable it using: php artisan module:enable Billing
+   ```
+   If the dependency does not exist in the codebase:
+   ```
+   ModuleDependencyException: Module [Order] requires module [Billing], but it was not found in the application.
+   ```
+
+2. **At CLI Level (Safe Protection):**
+   - **Preventing Accidental Breakage:** If you attempt to disable a module that other active modules depend on, the command halts:
+     ```bash
+     $ php artisan module:disable Billing
+     Active module(s) [Order] depend on [Billing].
+     ERROR: Cannot disable module [Billing] because active module [Order] depends on it. Use --force to disable anyway.
+     ```
+   - **Enabling Prerequisite Validation:** If you attempt to enable a module whose prerequisites are disabled, it guides you to enable the dependencies first:
+     ```bash
+     $ php artisan module:enable Order
+     WARN: Module [Order] depends on disabled module(s): Billing.
+     ERROR: Please enable prerequisite modules first or use --force to override.
+     ```
+
+3. **In Health Diagnostics (`php artisan module:doctor`):**
+   Displays the status of every module and flags any missing or disabled dependencies in the health inspection table.
+
+### Safe Module Renaming
+Rename any module safely across your entire codebase:
+
+```bash
+php artisan module:rename Order Sales
+```
+
+This single command:
+1. Moves the directory from `modules/Order` to `modules/Sales`.
+2. Renames `OrderServiceProvider.php` to `SalesServiceProvider.php` and `OrderDatabaseSeeder.php` to `SalesDatabaseSeeder.php`.
+3. Refactors PHP namespaces, class names, view namespaces (`order::` to `sales::`), and route prefixes across all module files.
+4. Updates `"name": "Sales"` in the module's `module.json`.
+5. **Cross-module propagation:** Scans all other modules in `modules/` and updates any `"dependencies"` arrays containing `"Order"` to `"Sales"`.
+6. Flushes and rebuilds the module discovery cache.
 
 ---
 
