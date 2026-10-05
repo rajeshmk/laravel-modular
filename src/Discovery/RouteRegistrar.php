@@ -34,7 +34,7 @@ final readonly class RouteRegistrar
         $apiPrefix = $this->config->get('modular.routing.api_prefix', 'api');
 
         /** @var Module $module */
-        foreach ($registry->all() as $module) {
+        foreach ($registry->enabled() as $module) {
             if ($module->hasWebRoutes()) {
                 $this->router->middleware($webMiddleware)->group($module->getWebRoutesPath());
             }

@@ -41,8 +41,14 @@ class ModuleListCommand extends Command
             ]);
             $database = ! empty($databaseParts) ? implode(', ', $databaseParts) : '<comment>None</comment>';
 
+            $deps = $module->getDependencies();
+            $depsFormatted = empty($deps) ? '<comment>-</comment>' : implode(', ', $deps);
+            $status = $module->isEnabled() ? '<info>Enabled</info>' : '<fg=red>Disabled</>';
+
             return [
                 'name' => $module->getName(),
+                'status' => $status,
+                'dependencies' => $depsFormatted,
                 'slug' => $module->getSlug(),
                 'provider' => $module->hasProvider() ? '<info>Registered</info>' : '<comment>None</comment>',
                 'routes' => ($module->hasWebRoutes() ? 'Web ' : '') . ($module->hasApiRoutes() ? 'API' : '') ?: '<comment>None</comment>',
@@ -55,7 +61,7 @@ class ModuleListCommand extends Command
         })->all();
 
         $this->table(
-            ['Module', 'Slug', 'Provider', 'Routes', 'Database', 'Commands', 'Tests', 'Views', 'Config'],
+            ['Module', 'Status', 'Dependencies', 'Slug', 'Provider', 'Routes', 'Database', 'Commands', 'Tests', 'Views', 'Config'],
             $rows
         );
 
