@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Application\Actions{{subNamespace}};
+
+use {{namespace}}\{{module}}\Domain\Contracts\{{model}}RepositoryInterface;
+
+final readonly class Delete{{model}}Action
+{
+    public function __construct(
+        private {{model}}RepositoryInterface $repository
+    ) {}
+
+    public function execute(int|string $id): bool
+    {
+        return $this->repository->delete($id);
+    }
+}

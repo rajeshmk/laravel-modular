@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Application\Actions{{subNamespace}};
+
+use {{namespace}}\{{module}}\Application\Data\{{model}}Data;
+use {{namespace}}\{{module}}\Domain\Contracts\{{model}}RepositoryInterface;
+use {{namespace}}\{{module}}\Domain\Models\{{model}};
+
+final readonly class Create{{model}}Action
+{
+    public function __construct(
+        private {{model}}RepositoryInterface $repository
+    ) {}
+
+    public function execute({{model}}Data $data): {{model}}
+    {
+        return $this->repository->create($data->toArray());
+    }
+}

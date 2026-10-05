@@ -8,6 +8,7 @@ use Hatchyu\Modular\Console\Commands\ActionMakeCommand;
 use Hatchyu\Modular\Console\Commands\CommandMakeCommand;
 use Hatchyu\Modular\Console\Commands\ContractMakeCommand;
 use Hatchyu\Modular\Console\Commands\ControllerMakeCommand;
+use Hatchyu\Modular\Console\Commands\CrudMakeCommand;
 use Hatchyu\Modular\Console\Commands\DataMakeCommand;
 use Hatchyu\Modular\Console\Commands\DtoMakeCommand;
 use Hatchyu\Modular\Console\Commands\EnumMakeCommand;
@@ -19,13 +20,16 @@ use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCheckCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
+use Hatchyu\Modular\Console\Commands\ModuleDoctorCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\ModuleRenameCommand;
 use Hatchyu\Modular\Console\Commands\ModuleSeedCommand;
 use Hatchyu\Modular\Console\Commands\NotificationMakeCommand;
 use Hatchyu\Modular\Console\Commands\ObserverMakeCommand;
 use Hatchyu\Modular\Console\Commands\PolicyMakeCommand;
 use Hatchyu\Modular\Console\Commands\QueryMakeCommand;
+use Hatchyu\Modular\Console\Commands\RepositoryMakeCommand;
 use Hatchyu\Modular\Console\Commands\RequestMakeCommand;
 use Hatchyu\Modular\Console\Commands\ResourceMakeCommand;
 use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
@@ -118,8 +122,12 @@ class ModularServiceProvider extends ServiceProvider
                 MigrationMakeCommand::class,
                 ModuleListCommand::class,
                 ModuleCheckCommand::class,
+                ModuleDoctorCommand::class,
+                ModuleRenameCommand::class,
                 ModuleCacheCommand::class,
                 ModuleClearCommand::class,
+                CrudMakeCommand::class,
+                RepositoryMakeCommand::class,
             ]);
 
             // Auto-discover Module Console Commands

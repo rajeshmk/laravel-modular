@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Tests\Feature{{subNamespace}};
+
+it('can list {{slugPlural}} via api', function () {
+    $response = $this->getJson('/api/{{slugPlural}}');
+
+    $response->assertOk();
+});
+
+it('can create a {{slug}} via api', function () {
+    $payload = [
+        // TODO: Add test payload attributes
+    ];
+
+    $response = $this->postJson('/api/{{slugPlural}}', $payload);
+
+    $response->assertCreated();
+});
