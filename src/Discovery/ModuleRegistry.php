@@ -60,9 +60,14 @@ final class ModuleRegistry
 
     public function find(string $name): ?Module
     {
+        $studly = Str::studly($name);
+        $kebab = Str::kebab($name);
+
         return $this->all()->first(
             fn (Module $module): bool => strcasecmp($module->getName(), $name) === 0
                 || strcasecmp($module->getSlug(), $name) === 0
+                || strcasecmp($module->getName(), $studly) === 0
+                || strcasecmp($module->getSlug(), $kebab) === 0
         );
     }
 

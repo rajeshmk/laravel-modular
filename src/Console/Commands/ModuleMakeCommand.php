@@ -111,7 +111,11 @@ class ModuleMakeCommand extends GeneratorCommand
         $viewContent = "<div>\n    <h1>Welcome to {$moduleName} Module</h1>\n</div>\n";
         $this->writeFile($module->getPath('resources/views/index.blade.php'), $viewContent, $force);
 
-        // 6. Gitkeep empty directories
+        // 6. Initial Database Seeder
+        $seederContent = $this->replacePlaceholders($this->getStub('seeder.database'), $replacements);
+        $this->writeFile($module->getPath("Database/Seeders/{$moduleName}DatabaseSeeder.php"), $seederContent, $force);
+
+        // 7. Gitkeep empty directories
         $emptyDirs = [
             'Domain/Models',
             'Domain/ValueObjects',
@@ -156,5 +160,18 @@ class ModuleMakeCommand extends GeneratorCommand
         ]);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'name' => [
+                'What is the name of the module?',
+                'e.g. Order, Customer, Billing',
+            ],
+        ];
     }
 }

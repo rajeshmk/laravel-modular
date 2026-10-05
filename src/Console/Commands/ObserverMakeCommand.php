@@ -7,15 +7,15 @@ namespace Hatchyu\Modular\Console\Commands;
 use Hatchyu\Modular\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class PolicyMakeCommand extends GeneratorCommand
+class ObserverMakeCommand extends GeneratorCommand
 {
-    protected $signature = 'module:make-policy
+    protected $signature = 'module:make-observer
                             {module : The name of the module}
-                            {name : The name of the policy class (e.g. CustomerPolicy or V1/CustomerPolicy)}
-                            {--m|model= : The name of the model class}
+                            {name : The name of the observer class (e.g. OrderObserver or V1/OrderObserver)}
+                            {--m|model= : The name of the model being observed}
                             {--force : Overwrite the file if it already exists}';
 
-    protected $description = 'Create a new Authorization Policy class inside Domain/Policies of a module';
+    protected $description = 'Create a new Eloquent Model Observer inside Domain/Observers of a module';
 
     public function handle(): int
     {
@@ -25,8 +25,8 @@ class PolicyMakeCommand extends GeneratorCommand
         $rawName = $this->argument('name');
         [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
-        if (! Str::endsWith($className, 'Policy')) {
-            $className .= 'Policy';
+        if (! Str::endsWith($className, 'Observer')) {
+            $className .= 'Observer';
         }
 
         /** @var string|null $modelOption */
@@ -42,7 +42,7 @@ class PolicyMakeCommand extends GeneratorCommand
                 $modelSubNamespace = $subNamespace;
             }
         } else {
-            $modelName = Str::before($className, 'Policy');
+            $modelName = Str::before($className, 'Observer');
             if ($subNamespace !== '' && file_exists($module->getPath("Domain/Models/{$modelName}.php")) && ! file_exists($module->getPath("Domain/Models/{$relativeDir}/{$modelName}.php"))) {
                 $modelSubNamespace = '';
             } else {
@@ -51,7 +51,7 @@ class PolicyMakeCommand extends GeneratorCommand
         }
 
         $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
-        $filePath = $module->getPath("Domain/Policies/{$subPath}.php");
+        $filePath = $module->getPath("Domain/Observers/{$subPath}.php");
 
         $modelImport = '';
         if ($modelName !== '') {
@@ -69,11 +69,11 @@ class PolicyMakeCommand extends GeneratorCommand
             'modelImport' => $modelImport,
         ];
 
-        $content = $this->replacePlaceholders($this->getStub('policy'), $replacements);
+        $content = $this->replacePlaceholders($this->getStub('observer'), $replacements);
         $force = (bool) $this->option('force');
 
         if ($this->writeFile($filePath, $content, $force)) {
-            $this->components->info("Policy [{$className}] created successfully at [{$filePath}].");
+            $this->components->info("Observer [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
         }

@@ -250,6 +250,29 @@ final readonly class Module
         return is_dir($this->getTestsPath());
     }
 
+    public function hasCommands(): bool
+    {
+        if ($this->cachedData !== null) {
+            return (bool) ($this->cachedData['has_commands'] ?? false);
+        }
+
+        return is_dir($this->getCommandsPath());
+    }
+
+    public function getCommandsPath(): string
+    {
+        if ($this->cachedData !== null && isset($this->cachedData['commands_path'])) {
+            return (string) $this->cachedData['commands_path'];
+        }
+
+        $dddPath = $this->getPath('Interface/Console/Commands');
+        if (is_dir($dddPath)) {
+            return $dddPath;
+        }
+
+        return $this->getPath('Console/Commands');
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -275,6 +298,8 @@ final readonly class Module
             'has_config' => $this->hasConfig(),
             'config_path' => $this->hasConfig() ? $this->getConfigPath() : null,
             'has_tests' => $this->hasTests(),
+            'has_commands' => $this->hasCommands(),
+            'commands_path' => $this->hasCommands() ? $this->getCommandsPath() : null,
         ];
     }
 }

@@ -56,6 +56,8 @@ return [
         'views' => true,
         'configs' => true,
         'factories' => true,
+        'policies' => true,
+        'commands' => true,
     ],
 
     /*

@@ -7,15 +7,36 @@ namespace Hatchyu\Modular\Console;
 use Hatchyu\Modular\Discovery\ModuleRegistry;
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Console\Command;
+use Illuminate\Console\Concerns\PromptsForMissingInput as PromptsTrait;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 
-abstract class GeneratorCommand extends Command
+abstract class GeneratorCommand extends Command implements PromptsForMissingInput
 {
+    use PromptsTrait;
+
     public function __construct(
         protected readonly ModuleRegistry $registry
     ) {
         parent::__construct();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'module' => [
+                'Which module does this belong to?',
+                'e.g. ' . ($this->registry->all()->first()?->getName() ?? 'Customer'),
+            ],
+            'name' => [
+                'What should this class be named?',
+                'e.g. ' . class_basename($this::class),
+            ],
+        ];
     }
 
     protected function getModule(): Module

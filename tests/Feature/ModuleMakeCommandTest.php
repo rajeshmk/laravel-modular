@@ -19,6 +19,7 @@ it('scaffolds a complete domain module conforming to DDD 4-layer architecture', 
         ->and(file_exists($module->getWebRoutesPath()))->toBeTrue()
         ->and(file_exists($module->getApiRoutesPath()))->toBeTrue()
         ->and(file_exists($module->getConfigPath()))->toBeTrue()
+        ->and(file_exists($module->getPath('Database/Seeders/BillingDatabaseSeeder.php')))->toBeTrue()
         ->and(is_dir($module->getPath('Domain/Models')))->toBeTrue()
         ->and(is_dir($module->getPath('Domain/Policies')))->toBeTrue()
         ->and(is_dir($module->getPath('Domain/Enums')))->toBeTrue()
@@ -92,24 +93,33 @@ it('generates individual module components via cli into proper DDD layers', func
     ;
 
     // Application: Service
-    $this->artisan('module:make-service', ['module' => 'Catalog', 'name' => 'ProductPricingService'])
+    $this->artisan('module:make-service', ['module' => 'Catalog', 'name' => 'PricingService'])
         ->assertSuccessful()
     ;
-    $serviceFile = __DIR__ . '/../tmp/modules/Catalog/Application/Services/ProductPricingService.php';
+    $serviceFile = __DIR__ . '/../tmp/modules/Catalog/Application/Services/PricingService.php';
     expect(file_exists($serviceFile))->toBeTrue()
         ->and(file_get_contents($serviceFile))->toContain('namespace Modules\Catalog\Application\Services;')
     ;
 
-    // Interface: API Controller
-    $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductController', '--api' => true])
+    // Interface: Controller (Web)
+    $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductController'])
         ->assertSuccessful()
     ;
-    $apiControllerFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Controllers/Api/V1/ProductController.php';
+    $controllerFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Controllers/ProductController.php';
+    expect(file_exists($controllerFile))->toBeTrue()
+        ->and(file_get_contents($controllerFile))->toContain('namespace Modules\Catalog\Interface\Controllers;')
+    ;
+
+    // Interface: Controller (API)
+    $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductApiController', '--api' => true])
+        ->assertSuccessful()
+    ;
+    $apiControllerFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Controllers/Api/V1/ProductApiController.php';
     expect(file_exists($apiControllerFile))->toBeTrue()
         ->and(file_get_contents($apiControllerFile))->toContain('namespace Modules\Catalog\Interface\Controllers\Api\V1;')
     ;
 
-    // Interface: Admin Controller
+    // Interface: Controller (Admin)
     $this->artisan('module:make-controller', ['module' => 'Catalog', 'name' => 'ProductAdminController', '--admin' => true])
         ->assertSuccessful()
     ;
@@ -136,6 +146,16 @@ it('generates individual module components via cli into proper DDD layers', func
         ->and(file_get_contents($resourceFile))->toContain('namespace Modules\Catalog\Interface\Resources;')
     ;
 
+    // Interface: Console Command
+    $this->artisan('module:make-command', ['module' => 'Catalog', 'name' => 'PruneCatalogCommand'])
+        ->assertSuccessful()
+    ;
+    $commandFile = __DIR__ . '/../tmp/modules/Catalog/Interface/Console/Commands/PruneCatalogCommand.php';
+    expect(file_exists($commandFile))->toBeTrue()
+        ->and(file_get_contents($commandFile))->toContain('namespace Modules\Catalog\Interface\Console\Commands;')
+        ->and(file_get_contents($commandFile))->toContain("protected \$signature = 'catalog:prune-catalog';")
+    ;
+
     // Domain: Model with factory & migration
     $this->artisan('module:make-model', ['module' => 'Catalog', 'name' => 'Product', '-m' => true, '-f' => true])
         ->assertSuccessful()
@@ -158,6 +178,16 @@ it('generates individual module components via cli into proper DDD layers', func
     $policyFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Policies/ProductPolicy.php';
     expect(file_exists($policyFile))->toBeTrue()
         ->and(file_get_contents($policyFile))->toContain('namespace Modules\Catalog\Domain\Policies;')
+    ;
+
+    // Domain: Observer
+    $this->artisan('module:make-observer', ['module' => 'Catalog', 'name' => 'ProductObserver', '--model' => 'Product'])
+        ->assertSuccessful()
+    ;
+    $observerFile = __DIR__ . '/../tmp/modules/Catalog/Domain/Observers/ProductObserver.php';
+    expect(file_exists($observerFile))->toBeTrue()
+        ->and(file_get_contents($observerFile))->toContain('namespace Modules\Catalog\Domain\Observers;')
+        ->and(file_get_contents($observerFile))->toContain('use Modules\Catalog\Domain\Models\Product;')
     ;
 
     // Domain: Enum
@@ -185,6 +215,25 @@ it('generates individual module components via cli into proper DDD layers', func
     $jobFile = __DIR__ . '/../tmp/modules/Catalog/Infrastructure/Jobs/SyncProductJob.php';
     expect(file_exists($jobFile))->toBeTrue()
         ->and(file_get_contents($jobFile))->toContain('namespace Modules\Catalog\Infrastructure\Jobs;')
+    ;
+
+    // Infrastructure: Mail
+    $this->artisan('module:make-mail', ['module' => 'Catalog', 'name' => 'ProductPriceChangedMail'])
+        ->assertSuccessful()
+    ;
+    $mailFile = __DIR__ . '/../tmp/modules/Catalog/Infrastructure/Mails/ProductPriceChangedMail.php';
+    expect(file_exists($mailFile))->toBeTrue()
+        ->and(file_get_contents($mailFile))->toContain('namespace Modules\Catalog\Infrastructure\Mails;')
+        ->and(file_get_contents($mailFile))->toContain("view: 'catalog::mail.product-price-changed'")
+    ;
+
+    // Infrastructure: Notification
+    $this->artisan('module:make-notification', ['module' => 'Catalog', 'name' => 'ProductLowStockNotification'])
+        ->assertSuccessful()
+    ;
+    $notificationFile = __DIR__ . '/../tmp/modules/Catalog/Infrastructure/Notifications/ProductLowStockNotification.php';
+    expect(file_exists($notificationFile))->toBeTrue()
+        ->and(file_get_contents($notificationFile))->toContain('namespace Modules\Catalog\Infrastructure\Notifications;')
     ;
 
     // Database: Seeder
@@ -230,24 +279,21 @@ it('supports --force flag to overwrite existing generated files', function () {
     $this->artisan('module:make', ['name' => 'Payments'])->assertSuccessful();
 
     $actionPath = __DIR__ . '/../tmp/modules/Payments/Application/Actions/ProcessPaymentAction.php';
-
-    // 1. First generation
     $this->artisan('module:make-action', [
         'module' => 'Payments',
         'name' => 'ProcessPaymentAction',
     ])->assertSuccessful();
 
-    file_put_contents($actionPath, '// Custom modification');
-    expect(file_get_contents($actionPath))->toBe('// Custom modification');
+    file_put_contents($actionPath, '// custom modified content');
 
-    // 2. Without force should not overwrite
+    // Without force, should warn and not overwrite
     $this->artisan('module:make-action', [
         'module' => 'Payments',
         'name' => 'ProcessPaymentAction',
     ])->assertFailed();
-    expect(file_get_contents($actionPath))->toBe('// Custom modification');
+    expect(file_get_contents($actionPath))->toBe('// custom modified content');
 
-    // 3. With --force should overwrite
+    // With force, should overwrite
     $this->artisan('module:make-action', [
         'module' => 'Payments',
         'name' => 'ProcessPaymentAction',
@@ -307,5 +353,25 @@ it('generates policies for nested models with correct model imports', function (
         ->and(file_get_contents($policyFile))->toContain('namespace Modules\Inventory\Domain\Policies\Relations;')
         ->and(file_get_contents($policyFile))->toContain('use Modules\Inventory\Domain\Models\Relations\StockItem;')
         ->and(file_get_contents($policyFile))->toContain('class StockItemPolicy')
+    ;
+});
+
+it('correctly falls back to root domain model import when policy is nested and root model exists', function () {
+    $this->artisan('module:make', ['name' => 'Customer'])->assertSuccessful();
+
+    $this->artisan('module:make-model', [
+        'module' => 'Customer',
+        'name' => 'Customer',
+    ])->assertSuccessful();
+
+    $this->artisan('module:make-policy', [
+        'module' => 'Customer',
+        'name' => 'V1/CustomerPolicy',
+    ])->assertSuccessful();
+
+    $policyFile = __DIR__ . '/../tmp/modules/Customer/Domain/Policies/V1/CustomerPolicy.php';
+    expect(file_exists($policyFile))->toBeTrue()
+        ->and(file_get_contents($policyFile))->toContain('use Modules\Customer\Domain\Models\Customer;')
+        ->and(file_get_contents($policyFile))->not->toContain('use Modules\Customer\Domain\Models\V1\Customer;')
     ;
 });

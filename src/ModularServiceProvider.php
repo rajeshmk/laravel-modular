@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Hatchyu\Modular;
 
 use Hatchyu\Modular\Console\Commands\ActionMakeCommand;
+use Hatchyu\Modular\Console\Commands\CommandMakeCommand;
 use Hatchyu\Modular\Console\Commands\ControllerMakeCommand;
 use Hatchyu\Modular\Console\Commands\DataMakeCommand;
 use Hatchyu\Modular\Console\Commands\DtoMakeCommand;
 use Hatchyu\Modular\Console\Commands\EnumMakeCommand;
 use Hatchyu\Modular\Console\Commands\EventMakeCommand;
 use Hatchyu\Modular\Console\Commands\JobMakeCommand;
+use Hatchyu\Modular\Console\Commands\MailMakeCommand;
 use Hatchyu\Modular\Console\Commands\MigrationMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
@@ -18,6 +20,9 @@ use Hatchyu\Modular\Console\Commands\ModuleCheckCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\ModuleSeedCommand;
+use Hatchyu\Modular\Console\Commands\NotificationMakeCommand;
+use Hatchyu\Modular\Console\Commands\ObserverMakeCommand;
 use Hatchyu\Modular\Console\Commands\PolicyMakeCommand;
 use Hatchyu\Modular\Console\Commands\QueryMakeCommand;
 use Hatchyu\Modular\Console\Commands\RequestMakeCommand;
@@ -26,10 +31,12 @@ use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
 use Hatchyu\Modular\Console\Commands\SeederMakeCommand;
 use Hatchyu\Modular\Console\Commands\ServiceMakeCommand;
 use Hatchyu\Modular\Console\Commands\TestMakeCommand;
+use Hatchyu\Modular\Discovery\CommandRegistrar;
 use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
 use Hatchyu\Modular\Discovery\MigrationRegistrar;
 use Hatchyu\Modular\Discovery\ModuleRegistry;
+use Hatchyu\Modular\Discovery\PolicyGuesser;
 use Hatchyu\Modular\Discovery\ProviderRegistrar;
 use Hatchyu\Modular\Discovery\RouteRegistrar;
 use Hatchyu\Modular\Discovery\ViewRegistrar;
@@ -92,12 +99,17 @@ class ModularServiceProvider extends ServiceProvider
                 ResourceMakeCommand::class,
                 ModelMakeCommand::class,
                 PolicyMakeCommand::class,
+                ObserverMakeCommand::class,
                 EnumMakeCommand::class,
                 EventMakeCommand::class,
                 JobMakeCommand::class,
+                MailMakeCommand::class,
+                NotificationMakeCommand::class,
                 RuleMakeCommand::class,
                 ServiceMakeCommand::class,
+                CommandMakeCommand::class,
                 SeederMakeCommand::class,
+                ModuleSeedCommand::class,
                 TestMakeCommand::class,
                 MigrationMakeCommand::class,
                 ModuleListCommand::class,
@@ -105,11 +117,21 @@ class ModularServiceProvider extends ServiceProvider
                 ModuleCacheCommand::class,
                 ModuleClearCommand::class,
             ]);
+
+            // Auto-discover Module Console Commands
+            if ((bool) $config->get('modular.autodiscover.commands', true)) {
+                (new CommandRegistrar($this->app))->register($registry);
+            }
         }
 
         // Auto-discover Model Factories
         if ((bool) $config->get('modular.autodiscover.factories', true)) {
             (new FactoryGuesser())->register($registry->getNamespace());
+        }
+
+        // Auto-discover Authorization Policies
+        if ((bool) $config->get('modular.autodiscover.policies', true)) {
+            (new PolicyGuesser())->register($registry->getNamespace());
         }
 
         // Auto-discover Module Routes
