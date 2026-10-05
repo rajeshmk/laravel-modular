@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\Contracts{{subNamespace}};
+
+use Illuminate\Support\Collection;
+use {{namespace}}\{{module}}\Domain\Models\{{model}};
+
+interface {{class}}
+{
+    /**
+     * @return Collection<int, {{model}}>
+     */
+    public function all(): Collection;
+
+    public function find(int|string $id): ?{{model}};
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function create(array $attributes): {{model}};
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function update(int|string $id, array $attributes): bool;
+
+    public function delete(int|string $id): bool;
+}

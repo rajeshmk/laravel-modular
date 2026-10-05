@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Infrastructure\Repositories{{subNamespace}};
+
+use Illuminate\Support\Collection;
+use {{namespace}}\{{module}}\Domain\Contracts\{{interface}};
+use {{namespace}}\{{module}}\Domain\Models\{{model}};
+
+class {{class}} implements {{interface}}
+{
+    public function __construct(
+        protected readonly {{model}} $model
+    ) {}
+
+    /**
+     * @return Collection<int, {{model}}>
+     */
+    public function all(): Collection
+    {
+        return $this->model->newQuery()->latest()->get();
+    }
+
+    public function find(int|string $id): ?{{model}}
+    {
+        return $this->model->newQuery()->find($id);
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function create(array $attributes): {{model}}
+    {
+        return $this->model->newQuery()->create($attributes);
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function update(int|string $id, array $attributes): bool
+    {
+        $record = $this->find($id);
+
+        if (! $record) {
+            return false;
+        }
+
+        return $record->update($attributes);
+    }
+
+    public function delete(int|string $id): bool
+    {
+        $record = $this->find($id);
+
+        if (! $record) {
+            return false;
+        }
+
+        return (bool) $record->delete();
+    }
+}

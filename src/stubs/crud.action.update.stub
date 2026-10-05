@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Application\Actions{{subNamespace}};
+
+use {{namespace}}\{{module}}\Application\Data\{{model}}Data;
+use {{namespace}}\{{module}}\Domain\Contracts\{{model}}RepositoryInterface;
+
+final readonly class Update{{model}}Action
+{
+    public function __construct(
+        private {{model}}RepositoryInterface $repository
+    ) {}
+
+    public function execute(int|string $id, {{model}}Data $data): bool
+    {
+        return $this->repository->update($id, $data->toArray());
+    }
+}

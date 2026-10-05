@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Interface\Controllers\Api\{{version}}{{subNamespace}};
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use {{namespace}}\{{module}}\Application\Actions\Create{{model}}Action;
+use {{namespace}}\{{module}}\Application\Actions\Delete{{model}}Action;
+use {{namespace}}\{{module}}\Application\Actions\Update{{model}}Action;
+use {{namespace}}\{{module}}\Application\Data\{{model}}Data;
+use {{namespace}}\{{module}}\Domain\Contracts\{{model}}RepositoryInterface;
+use {{namespace}}\{{module}}\Interface\Requests\Store{{model}}Request;
+use {{namespace}}\{{module}}\Interface\Requests\Update{{model}}Request;
+use {{namespace}}\{{module}}\Interface\Resources\{{model}}Resource;
+
+class {{model}}Controller
+{
+    public function __construct(
+        protected readonly {{model}}RepositoryInterface $repository
+    ) {}
+
+    public function index(): JsonResponse
+    {
+        $items = $this->repository->all();
+
+        return response()->json([
+            'data' => {{model}}Resource::collection($items),
+        ]);
+    }
+
+    public function store(
+        Store{{model}}Request $request,
+        Create{{model}}Action $action
+    ): JsonResponse {
+        $record = $action->execute({{model}}Data::fromRequest($request));
+
+        return response()->json([
+            'message' => '{{model}} created successfully.',
+            'data' => new {{model}}Resource($record),
+        ], Response::HTTP_CREATED);
+    }
+
+    public function show(int|string $id): JsonResponse
+    {
+        $record = $this->repository->find($id);
+
+        if (! $record) {
+            return response()->json([
+                'message' => '{{model}} not found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => new {{model}}Resource($record),
+        ]);
+    }
+
+    public function update(
+        Update{{model}}Request $request,
+        int|string $id,
+        Update{{model}}Action $action
+    ): JsonResponse {
+        $updated = $action->execute($id, {{model}}Data::fromRequest($request));
+
+        if (! $updated) {
+            return response()->json([
+                'message' => '{{model}} not found or could not be updated.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'message' => '{{model}} updated successfully.',
+            'data' => new {{model}}Resource($this->repository->find($id)),
+        ]);
+    }
+
+    public function destroy(
+        int|string $id,
+        Delete{{model}}Action $action
+    ): JsonResponse {
+        $deleted = $action->execute($id);
+
+        if (! $deleted) {
+            return response()->json([
+                'message' => '{{model}} not found or could not be deleted.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+}
