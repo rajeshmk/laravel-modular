@@ -6,13 +6,18 @@
 
 A high-performance, zero-boilerplate **Domain-Driven Design (DDD) 4-Layer Modular Architecture** and Pragmatic CQRS generator CLI for modern Laravel applications.
 
+> [!TIP]
+> **Looking for a Simpler Modular Setup?**  
+> If you are building standard CRUD apps, MVPs, small-to-medium SaaS, or websites and want feature modularity without the ceremony of DDD layers, CQRS actions, and repository interfaces, check out our lightweight Laravel-native companion package:  
+> 👉 **[`hatchyu/laravel-modular-lite`](https://github.com/rajeshmk/laravel-modular-lite)** (`composer require hatchyu/laravel-modular-lite`)
+
 ---
 
 ## Key Features
 
 - 🚀 **Zero-Boilerplate Auto-Discovery:** Automatically discovers module configs, service providers, routes (`web.php` & `api.php`), database migrations, and namespaced views.
 - 🏛️ **DDD 4-Layer Architecture:** Cleanly partitions modules into `Domain/`, `Application/`, `Interface/`, `Infrastructure/`, and `Database/`.
-- ⚡ **True 0ms Production Performance:** Built-in `php artisan module:cache` compiles full discovery manifests, completely eliminating runtime filesystem syscalls in production.
+- ⚡ **Zero Runtime Filesystem Scanning:** Built-in `php artisan module:cache` compiles full discovery manifests, completely eliminating runtime filesystem syscalls in production.
 - 🛠️ **Full-Featured Artisan CLI:** Generators for Domain Models, Policies, Enums, Events, CQRS Actions (writes), Queries (reads), DTOs (`Data`), Rules, Services, Thin Controllers, Requests, Resources, Jobs, Tests, Migrations, and Seeders.
 - 🗂️ **Nested Sub-Namespace Support:** Seamlessly generate components into subdirectories (e.g. `V1/CreateOrderAction`, `Api/V2/OrderController`, `Relations/OrderItem`).
 - 🔄 **Overwrite Protection & `--force`:** Standard `--force` option across all generator commands.
