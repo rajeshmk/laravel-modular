@@ -56,6 +56,7 @@
     "scripts": {
         "test": "vendor/bin/pest",
         "format": "vendor/bin/pint",
-        "format:check": "vendor/bin/pint --test"
+        "format:check": "vendor/bin/pint --test",
+        "ship": "bash bin/ship.sh"
     }
 }
