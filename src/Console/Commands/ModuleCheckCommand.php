@@ -92,11 +92,13 @@ class ModuleCheckCommand extends Command
                 'web_routes' => $module->hasWebRoutes() ? '<info>Yes</info>' : '<comment>No</comment>',
                 'api_routes' => $module->hasApiRoutes() ? '<info>Yes</info>' : '<comment>No</comment>',
                 'migrations' => $module->hasMigrations() ? '<info>Yes</info>' : '<comment>No</comment>',
+                'seeders' => $module->hasSeeders() ? '<info>Yes</info>' : '<comment>No</comment>',
+                'commands' => $module->hasCommands() ? '<info>Yes</info>' : '<comment>No</comment>',
             ];
         }
 
         $this->newLine();
-        $this->table(['Module', 'Provider Class', 'Web Routes', 'API Routes', 'Migrations'], $rows);
+        $this->table(['Module', 'Provider Class', 'Web Routes', 'API Routes', 'Migrations', 'Seeders', 'Commands'], $rows);
 
         if ($hasIssues && (bool) $this->option('strict')) {
             $this->components->warn('Health check found one or more warnings in strict mode.');

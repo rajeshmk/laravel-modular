@@ -47,6 +47,7 @@ class ModuleListCommand extends Command
                 'provider' => $module->hasProvider() ? '<info>Registered</info>' : '<comment>None</comment>',
                 'routes' => ($module->hasWebRoutes() ? 'Web ' : '') . ($module->hasApiRoutes() ? 'API' : '') ?: '<comment>None</comment>',
                 'database' => $database,
+                'commands' => $module->hasCommands() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'tests' => $module->hasTests() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'views' => $module->hasViews() ? '<info>Yes</info>' : '<comment>None</comment>',
                 'config' => $module->hasConfig() ? '<info>Yes</info>' : '<comment>None</comment>',
@@ -54,7 +55,7 @@ class ModuleListCommand extends Command
         })->all();
 
         $this->table(
-            ['Module', 'Slug', 'Provider', 'Routes', 'Database', 'Tests', 'Views', 'Config'],
+            ['Module', 'Slug', 'Provider', 'Routes', 'Database', 'Commands', 'Tests', 'Views', 'Config'],
             $rows
         );
 

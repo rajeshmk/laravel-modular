@@ -7,6 +7,7 @@ namespace Hatchyu\Modular\Discovery;
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Str;
 
 final readonly class ConfigRegistrar
 {
@@ -31,9 +32,17 @@ final readonly class ConfigRegistrar
                     continue;
                 }
 
-                $key = $module->getSlug();
-                $current = (array) $this->config->get($key, []);
-                $this->config->set($key, array_replace_recursive($moduleConfig, $current));
+                $slugKey = $module->getSlug();
+                $snakeKey = Str::snake($module->getName());
+
+                $currentSlug = (array) $this->config->get($slugKey, []);
+                $merged = array_replace_recursive($moduleConfig, $currentSlug);
+                $this->config->set($slugKey, $merged);
+
+                if ($snakeKey !== $slugKey) {
+                    $currentSnake = (array) $this->config->get($snakeKey, []);
+                    $this->config->set($snakeKey, array_replace_recursive($merged, $currentSnake));
+                }
             }
         }
     }

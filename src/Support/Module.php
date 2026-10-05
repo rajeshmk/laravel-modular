@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hatchyu\Modular\Support;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 final readonly class Module
@@ -274,6 +275,59 @@ final readonly class Module
     }
 
     /**
+     * @return array<int, string>
+     */
+    public function getCommandClasses(): array
+    {
+        if ($this->cachedData !== null && isset($this->cachedData['command_classes'])) {
+            /* @var array<int, string> */
+            return (array) $this->cachedData['command_classes'];
+        }
+
+        if (! $this->hasCommands()) {
+            return [];
+        }
+
+        $commandsPath = $this->getCommandsPath();
+        if (! is_dir($commandsPath)) {
+            return [];
+        }
+
+        $classes = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($commandsPath, \RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $pathName = $file->getPathname();
+                if (file_exists($pathName)) {
+                    require_once $pathName;
+                }
+
+                $relativePath = Str::after($pathName, rtrim($commandsPath, '/\\') . DIRECTORY_SEPARATOR);
+                $classPath = str_replace(['/', '\\'], '\\', Str::beforeLast($relativePath, '.php'));
+
+                $relativeNamespace = Str::contains($commandsPath, 'Interface')
+                    ? 'Interface\\Console\\Commands\\'
+                    : 'Console\\Commands\\';
+
+                $fullClass = $this->getNamespace($relativeNamespace . $classPath);
+
+                if (class_exists($fullClass)) {
+                    $reflection = new \ReflectionClass($fullClass);
+                    if ($reflection->isSubclassOf(Command::class) && ! $reflection->isAbstract()) {
+                        $classes[] = $fullClass;
+                    }
+                }
+            }
+        }
+
+        return $classes;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -300,6 +354,7 @@ final readonly class Module
             'has_tests' => $this->hasTests(),
             'has_commands' => $this->hasCommands(),
             'commands_path' => $this->hasCommands() ? $this->getCommandsPath() : null,
+            'command_classes' => $this->getCommandClasses(),
         ];
     }
 }

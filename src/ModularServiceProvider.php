@@ -122,6 +122,12 @@ class ModularServiceProvider extends ServiceProvider
             if ((bool) $config->get('modular.autodiscover.commands', true)) {
                 (new CommandRegistrar($this->app))->register($registry);
             }
+
+            $this->optimizes(
+                optimize: 'module:cache',
+                clear: 'module:clear',
+                key: 'modular'
+            );
         }
 
         // Auto-discover Model Factories
@@ -136,7 +142,7 @@ class ModularServiceProvider extends ServiceProvider
 
         // Auto-discover Module Routes
         if ((bool) $config->get('modular.autodiscover.routes', true)) {
-            (new RouteRegistrar($this->app->make('router'), $config))->register($registry);
+            (new RouteRegistrar($this->app->make('router'), $config, $this->app))->register($registry);
         }
 
         // Auto-discover Module Migrations

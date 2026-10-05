@@ -6,17 +6,24 @@ namespace Hatchyu\Modular\Discovery;
 
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 
 final readonly class RouteRegistrar
 {
     public function __construct(
         private Router $router,
-        private ConfigRepository $config
+        private ConfigRepository $config,
+        private ?Application $app = null
     ) {}
 
     public function register(ModuleRegistry $registry): void
     {
+        // Skip registering routes from filesystem if Laravel routes are already cached
+        if ($this->app !== null && method_exists($this->app, 'routesAreCached') && $this->app->routesAreCached()) {
+            return;
+        }
+
         /** @var array<int, string> $webMiddleware */
         $webMiddleware = $this->config->get('modular.routing.web_middleware', ['web']);
 

@@ -375,3 +375,37 @@ it('correctly falls back to root domain model import when policy is nested and r
         ->and(file_get_contents($policyFile))->not->toContain('use Modules\Customer\Domain\Models\V1\Customer;')
     ;
 });
+
+it('generates a complete model cluster via module:make-model with --all', function () {
+    $this->artisan('module:make', ['name' => 'Commerce'])->assertSuccessful();
+
+    $this->artisan('module:make-model', [
+        'module' => 'Commerce',
+        'name' => 'Order',
+        '--all' => true,
+    ])->assertSuccessful();
+
+    // 1. Model
+    $modelFile = __DIR__ . '/../tmp/modules/Commerce/Domain/Models/Order.php';
+    expect(file_exists($modelFile))->toBeTrue();
+
+    // 2. Migration
+    $migrations = glob(__DIR__ . '/../tmp/modules/Commerce/Database/Migrations/*_create_orders_table.php');
+    expect($migrations)->toHaveCount(1);
+
+    // 3. Factory
+    $factoryFile = __DIR__ . '/../tmp/modules/Commerce/Database/Factories/OrderFactory.php';
+    expect(file_exists($factoryFile))->toBeTrue();
+
+    // 4. Seeder
+    $seederFile = __DIR__ . '/../tmp/modules/Commerce/Database/Seeders/OrderSeeder.php';
+    expect(file_exists($seederFile))->toBeTrue();
+
+    // 5. Policy
+    $policyFile = __DIR__ . '/../tmp/modules/Commerce/Domain/Policies/OrderPolicy.php';
+    expect(file_exists($policyFile))->toBeTrue();
+
+    // 6. API Controller
+    $controllerFile = __DIR__ . '/../tmp/modules/Commerce/Interface/Controllers/Api/V1/OrderController.php';
+    expect(file_exists($controllerFile))->toBeTrue();
+});

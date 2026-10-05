@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Hatchyu\Modular\Discovery\CommandRegistrar;
+use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
 use Hatchyu\Modular\Discovery\ModuleRegistry;
 use Hatchyu\Modular\Discovery\PolicyGuesser;
@@ -162,4 +163,18 @@ it('discovers and registers module console commands', function () {
     (new CommandRegistrar(app()))->register($registry);
 
     $this->artisan('commander:greet')->assertSuccessful();
+});
+
+it('registers module config under both slug and snake_case keys', function () {
+    $this->artisan('module:make', ['name' => 'RealEstateOps'])->assertSuccessful();
+
+    $configFile = __DIR__ . '/../tmp/modules/RealEstateOps/config/config.php';
+    file_put_contents($configFile, "<?php\n\nreturn ['tax_rate' => 15];\n");
+
+    $registry = app(ModuleRegistry::class)->flush();
+    (new ConfigRegistrar(config(), app()))->register($registry);
+
+    expect(config('real-estate-ops.tax_rate'))->toBe(15)
+        ->and(config('real_estate_ops.tax_rate'))->toBe(15)
+    ;
 });
