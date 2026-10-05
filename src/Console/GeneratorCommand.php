@@ -60,6 +60,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 
     /**
      * Parse class input and split into class name, sub-namespace, and relative directory path.
+     * Prevents path traversal vulnerabilities by validating and sanitizing each segment.
      *
      * @return array{0: string, 1: string, 2: string} [className, subNamespace, relativeDir]
      */
@@ -68,10 +69,28 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
         $normalized = str_replace(['/', '\\'], '/', trim($input, '/\\'));
         $parts = explode('/', $normalized);
 
-        $rawClass = array_pop($parts);
+        $cleanParts = [];
+        foreach ($parts as $part) {
+            $trimmed = trim($part);
+            if ($trimmed === '' || $trimmed === '.' || $trimmed === '..') {
+                continue;
+            }
+
+            // Strip any character not alphanumeric or underscore
+            $sanitized = preg_replace('/[^a-zA-Z0-9_]/', '', $trimmed);
+            if ($sanitized !== null && $sanitized !== '') {
+                $cleanParts[] = $sanitized;
+            }
+        }
+
+        if (empty($cleanParts)) {
+            $cleanParts = ['Model'];
+        }
+
+        $rawClass = array_pop($cleanParts);
         $className = Str::studly((string) $rawClass);
 
-        $studlyParts = array_map([Str::class, 'studly'], array_filter($parts));
+        $studlyParts = array_map([Str::class, 'studly'], $cleanParts);
         $subNamespace = implode('\\', $studlyParts);
         $relativeDir = implode(DIRECTORY_SEPARATOR, $studlyParts);
 

@@ -409,3 +409,92 @@ it('generates a complete model cluster via module:make-model with --all', functi
     $controllerFile = __DIR__ . '/../tmp/modules/Commerce/Interface/Controllers/Api/V1/OrderController.php';
     expect(file_exists($controllerFile))->toBeTrue();
 });
+
+it('rejects invalid module names in module:make', function () {
+    $this->artisan('module:make', ['name' => '../../HackedModule'])
+        ->assertFailed()
+    ;
+
+    $this->artisan('module:make', ['name' => '123Invalid'])
+        ->assertFailed()
+    ;
+
+    $this->artisan('module:make', ['name' => 'Invalid!Name'])
+        ->assertFailed()
+    ;
+});
+
+it('prevents path traversal when generating module components', function () {
+    $this->artisan('module:make', ['name' => 'SecurityModule'])->assertSuccessful();
+
+    $this->artisan('module:make-model', [
+        'module' => 'SecurityModule',
+        'name' => '../../OutsideModel',
+    ])->assertSuccessful();
+
+    // Must be placed strictly within the module boundary, never outside
+    $modelFile = __DIR__ . '/../tmp/modules/SecurityModule/Domain/Models/OutsideModel.php';
+    expect(file_exists($modelFile))->toBeTrue();
+
+    // Verify it did not escape outside the module root
+    $escapedFile = __DIR__ . '/../tmp/modules/OutsideModel.php';
+    expect(file_exists($escapedFile))->toBeFalse();
+});
+
+it('generates domain value objects and contracts', function () {
+    $this->artisan('module:make', ['name' => 'Banking'])->assertSuccessful();
+
+    // 1. Value Object
+    $this->artisan('module:make-value-object', [
+        'module' => 'Banking',
+        'name' => 'Money',
+    ])->assertSuccessful();
+
+    $voFile = __DIR__ . '/../tmp/modules/Banking/Domain/ValueObjects/Money.php';
+    expect(file_exists($voFile))->toBeTrue()
+        ->and(file_get_contents($voFile))->toContain('namespace Modules\Banking\Domain\ValueObjects;')
+        ->and(file_get_contents($voFile))->toContain('final readonly class Money')
+    ;
+
+    // 2. Contract
+    $this->artisan('module:make-contract', [
+        'module' => 'Banking',
+        'name' => 'PaymentGatewayContract',
+    ])->assertSuccessful();
+
+    $contractFile = __DIR__ . '/../tmp/modules/Banking/Domain/Contracts/PaymentGatewayContract.php';
+    expect(file_exists($contractFile))->toBeTrue()
+        ->and(file_get_contents($contractFile))->toContain('namespace Modules\Banking\Domain\Contracts;')
+        ->and(file_get_contents($contractFile))->toContain('interface PaymentGatewayContract')
+    ;
+});
+
+it('generates pest architecture tests via module:make-test with --arch', function () {
+    $this->artisan('module:make', ['name' => 'Compliance'])->assertSuccessful();
+
+    $this->artisan('module:make-test', [
+        'module' => 'Compliance',
+        'name' => 'ArchitectureTest',
+        '--arch' => true,
+    ])->assertSuccessful();
+
+    $archTest = __DIR__ . '/../tmp/modules/Compliance/tests/Feature/ArchitectureTest.php';
+    expect(file_exists($archTest))->toBeTrue()
+        ->and(file_get_contents($archTest))->toContain("test('module strict types are declared in all files'")
+        ->and(file_get_contents($archTest))->toContain("test('module actions must have an execute or invoke method'")
+        ->and(file_get_contents($archTest))->toContain("test('module controllers must not call Eloquent models directly'")
+    ;
+});
+
+it('sanitizes migration table names against code injection', function () {
+    $this->artisan('module:make', ['name' => 'DbSecurity'])->assertSuccessful();
+
+    $this->artisan('module:make-migration', [
+        'module' => 'DbSecurity',
+        'name' => "create_users'); phpinfo(); //_table",
+    ])->assertSuccessful();
+
+    $files = glob(__DIR__ . '/../tmp/modules/DbSecurity/Database/Migrations/*_create_users_phpinfo_table.php');
+    expect($files)->toHaveCount(1)
+        ->and(file_get_contents($files[0]))->not->toContain('phpinfo();');
+});

@@ -22,7 +22,8 @@ class MigrationMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $migrationName = Str::snake(trim($rawName));
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9_]+/', '_', trim($rawName)) ?: 'migration';
+        $migrationName = preg_replace('/_+/', '_', Str::snake($sanitizedName));
         $force = (bool) $this->option('force');
 
         $migrationDir = is_dir($module->getPath('database/migrations')) && ! is_dir($module->getPath('Database/Migrations'))
@@ -49,8 +50,10 @@ class MigrationMakeCommand extends GeneratorCommand
         $isCreate = false;
 
         if (preg_match('/^create_(.+)_table$/', $migrationName, $matches)) {
-            $tableName = $matches[1];
+            $tableName = preg_replace('/[^a-zA-Z0-9_]/', '', $matches[1]) ?: 'table_name';
             $isCreate = true;
+        } else {
+            $tableName = preg_replace('/[^a-zA-Z0-9_]/', '', $migrationName) ?: 'table_name';
         }
 
         if ($isCreate) {

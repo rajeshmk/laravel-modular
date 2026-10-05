@@ -13,4 +13,9 @@ class {{class}}
     {
         return response()->noContent();
     }
+
+    public function show(int|string $id): mixed
+    {
+        return response()->noContent();
+    }
 }

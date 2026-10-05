@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+test('module strict types are declared in all files', function () {
+    expect('Modules\{{module}}')
+        ->toUseStrictTypes();
+});
+
+test('module actions must have an execute or invoke method', function () {
+    expect('Modules\{{module}}\Application\Actions')
+        ->toHaveMethod('execute')
+        ->or->toHaveMethod('__invoke');
+});
+
+test('module controllers must not call Eloquent models directly', function () {
+    expect('Modules\{{module}}\Interface\Controllers')
+        ->not->toUse('Illuminate\Database\Eloquent\Model');
+});

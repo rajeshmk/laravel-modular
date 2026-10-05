@@ -35,7 +35,25 @@ final readonly class Module
             return $this->path;
         }
 
-        return rtrim($this->path, '/\\') . DIRECTORY_SEPARATOR . ltrim($subPath, '/\\');
+        $cleanSubPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim($subPath, '/\\'));
+        $parts = explode(DIRECTORY_SEPARATOR, $cleanSubPath);
+        $safeParts = [];
+
+        foreach ($parts as $part) {
+            if ($part === '' || $part === '.') {
+                continue;
+            }
+            if ($part === '..') {
+                if (! empty($safeParts)) {
+                    array_pop($safeParts);
+                }
+
+                continue;
+            }
+            $safeParts[] = $part;
+        }
+
+        return rtrim($this->path, '/\\') . (empty($safeParts) ? '' : DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $safeParts));
     }
 
     public function getDomainPath(?string $subPath = null): string

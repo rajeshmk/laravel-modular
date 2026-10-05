@@ -13,6 +13,7 @@ class TestMakeCommand extends GeneratorCommand
                             {module : The name of the module}
                             {name : The name of the test class (e.g. OrderApiTest or V1/OrderApiTest)}
                             {--unit : Create a unit test instead of a feature test}
+                            {--arch : Create a Pest architecture test}
                             {--phpunit : Generate standard PHPUnit test instead of Pest}
                             {--force : Overwrite the file if it already exists}';
 
@@ -30,12 +31,19 @@ class TestMakeCommand extends GeneratorCommand
             $className .= 'Test';
         }
 
-        $type = (bool) $this->option('unit') ? 'Unit' : 'Feature';
+        $isArch = (bool) $this->option('arch');
+        $isPest = ! (bool) $this->option('phpunit');
+
+        if ($isArch) {
+            $type = 'Feature';
+            $stubName = 'test.arch';
+        } else {
+            $type = (bool) $this->option('unit') ? 'Unit' : 'Feature';
+            $stubName = $isPest ? 'test.pest' : 'test.phpunit';
+        }
+
         $subPath = $relativeDir !== '' ? "tests/{$type}/{$relativeDir}/{$className}" : "tests/{$type}/{$className}";
         $filePath = $module->getPath("{$subPath}.php");
-
-        $isPest = ! (bool) $this->option('phpunit');
-        $stubName = $isPest ? 'test.pest' : 'test.phpunit';
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),

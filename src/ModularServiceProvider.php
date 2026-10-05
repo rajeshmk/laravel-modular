@@ -6,6 +6,7 @@ namespace Hatchyu\Modular;
 
 use Hatchyu\Modular\Console\Commands\ActionMakeCommand;
 use Hatchyu\Modular\Console\Commands\CommandMakeCommand;
+use Hatchyu\Modular\Console\Commands\ContractMakeCommand;
 use Hatchyu\Modular\Console\Commands\ControllerMakeCommand;
 use Hatchyu\Modular\Console\Commands\DataMakeCommand;
 use Hatchyu\Modular\Console\Commands\DtoMakeCommand;
@@ -31,6 +32,7 @@ use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
 use Hatchyu\Modular\Console\Commands\SeederMakeCommand;
 use Hatchyu\Modular\Console\Commands\ServiceMakeCommand;
 use Hatchyu\Modular\Console\Commands\TestMakeCommand;
+use Hatchyu\Modular\Console\Commands\ValueObjectMakeCommand;
 use Hatchyu\Modular\Discovery\CommandRegistrar;
 use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
@@ -106,6 +108,8 @@ class ModularServiceProvider extends ServiceProvider
                 MailMakeCommand::class,
                 NotificationMakeCommand::class,
                 RuleMakeCommand::class,
+                ContractMakeCommand::class,
+                ValueObjectMakeCommand::class,
                 ServiceMakeCommand::class,
                 CommandMakeCommand::class,
                 SeederMakeCommand::class,

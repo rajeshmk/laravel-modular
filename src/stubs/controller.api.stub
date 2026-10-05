@@ -15,4 +15,13 @@ class {{class}}
             'data' => [],
         ]);
     }
+
+    public function show(int|string $id): JsonResponse
+    {
+        return response()->json([
+            'data' => [
+                'id' => $id,
+            ],
+        ]);
+    }
 }

@@ -20,6 +20,13 @@ class ModuleMakeCommand extends GeneratorCommand
     {
         /** @var string $rawName */
         $rawName = $this->argument('name');
+
+        if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $rawName) !== 1) {
+            $this->components->error("Invalid module name [{$rawName}]. Module names must begin with a letter and contain only alphanumeric characters, underscores, or hyphens.");
+
+            return self::FAILURE;
+        }
+
         $moduleName = Str::studly($rawName);
         $force = (bool) $this->option('force');
 
@@ -41,6 +48,7 @@ class ModuleMakeCommand extends GeneratorCommand
         $directories = [
             // 1. Domain Layer
             'Domain/Models',
+            'Domain/Contracts',
             'Domain/ValueObjects',
             'Domain/Enums',
             'Domain/Events',
@@ -118,6 +126,7 @@ class ModuleMakeCommand extends GeneratorCommand
         // 7. Gitkeep empty directories
         $emptyDirs = [
             'Domain/Models',
+            'Domain/Contracts',
             'Domain/ValueObjects',
             'Domain/Enums',
             'Domain/Events',
