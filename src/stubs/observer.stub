@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\Observers{{subNamespace}};
+
+{{modelImport}}
+
+class {{class}}
+{
+    public function created({{modelClass}} ${{modelVariable}}): void
+    {
+        //
+    }
+
+    public function updated({{modelClass}} ${{modelVariable}}): void
+    {
+        //
+    }
+
+    public function deleted({{modelClass}} ${{modelVariable}}): void
+    {
+        //
+    }
+}

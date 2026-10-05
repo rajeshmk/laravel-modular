@@ -18,6 +18,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Architecture Layout Preset
+    |--------------------------------------------------------------------------
+    |
+    | "ddd": 4-Layer Domain-Driven Design (Domain, Application, Interface, Infrastructure, Database)
+    | "flat": Legacy flat structure (Actions, Queries, Controllers, Models, etc.)
+    |
+    */
+    'layout' => 'ddd',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ignored Directories
+    |--------------------------------------------------------------------------
+    |
+    | Directory names inside the modules path to ignore during auto-discovery.
+    |
+    */
+    'ignore' => [
+        'node_modules',
+        'vendor',
+        '.git',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Auto-Discovery Settings
     |--------------------------------------------------------------------------
     |
@@ -31,6 +56,8 @@ return [
         'views' => true,
         'configs' => true,
         'factories' => true,
+        'policies' => true,
+        'commands' => true,
     ],
 
     /*

@@ -11,9 +11,10 @@ class MigrationMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-migration
                             {module : The name of the module}
-                            {name : The name of the migration (e.g. create_orders_table)}';
+                            {name : The name of the migration (e.g. create_orders_table)}
+                            {--force : Overwrite the file if it already exists}';
 
-    protected $description = 'Create a new database migration file inside a module';
+    protected $description = 'Create a new database migration file inside Database/Migrations of a module';
 
     public function handle(): int
     {
@@ -21,18 +22,38 @@ class MigrationMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $migrationName = Str::snake(trim($rawName));
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9_]+/', '_', trim($rawName)) ?: 'migration';
+        $migrationName = preg_replace('/_+/', '_', Str::snake($sanitizedName));
+        $force = (bool) $this->option('force');
+
+        $migrationDir = is_dir($module->getPath('database/migrations')) && ! is_dir($module->getPath('Database/Migrations'))
+            ? 'database/migrations'
+            : 'Database/Migrations';
+
+        $existingFiles = glob($module->getPath("{$migrationDir}/*_{$migrationName}.php")) ?: [];
+
+        if (! empty($existingFiles) && ! $force) {
+            $existingFile = basename($existingFiles[0]);
+            $this->components->warn("Migration for [{$migrationName}] already exists at [{$existingFile}]. Use --force to overwrite.");
+
+            return self::FAILURE;
+        }
 
         $timestamp = date('Y_m_d_His');
-        $fileName = "{$timestamp}_{$migrationName}.php";
-        $filePath = $module->getPath("database/migrations/{$fileName}");
+        $fileName = ! empty($existingFiles) && $force
+            ? basename($existingFiles[0])
+            : "{$timestamp}_{$migrationName}.php";
+
+        $filePath = $module->getPath("{$migrationDir}/{$fileName}");
 
         $tableName = 'table_name';
         $isCreate = false;
 
         if (preg_match('/^create_(.+)_table$/', $migrationName, $matches)) {
-            $tableName = $matches[1];
+            $tableName = preg_replace('/[^a-zA-Z0-9_]/', '', $matches[1]) ?: 'table_name';
             $isCreate = true;
+        } else {
+            $tableName = preg_replace('/[^a-zA-Z0-9_]/', '', $migrationName) ?: 'table_name';
         }
 
         if ($isCreate) {
@@ -60,7 +81,6 @@ class MigrationMakeCommand extends GeneratorCommand
                         Schema::dropIfExists('{$tableName}');
                     }
                 };
-
                 PHP;
         } else {
             $content = <<<PHP
@@ -88,11 +108,10 @@ class MigrationMakeCommand extends GeneratorCommand
                         });
                     }
                 };
-
                 PHP;
         }
 
-        if ($this->writeFile($filePath, $content)) {
+        if ($this->writeFile($filePath, $content, $force)) {
             $this->components->info("Migration [{$fileName}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;

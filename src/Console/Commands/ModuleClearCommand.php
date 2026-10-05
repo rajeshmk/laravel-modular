@@ -11,6 +11,11 @@ class ModuleClearCommand extends Command
 {
     protected $signature = 'module:clear';
 
+    /**
+     * @var array<int, string>
+     */
+    protected $aliases = ['module:clear-cache'];
+
     protected $description = 'Remove the compiled module discovery cache';
 
     public function __construct(

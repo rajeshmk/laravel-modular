@@ -5,21 +5,40 @@ declare(strict_types=1);
 namespace Hatchyu\Modular;
 
 use Hatchyu\Modular\Console\Commands\ActionMakeCommand;
+use Hatchyu\Modular\Console\Commands\CommandMakeCommand;
+use Hatchyu\Modular\Console\Commands\ContractMakeCommand;
 use Hatchyu\Modular\Console\Commands\ControllerMakeCommand;
+use Hatchyu\Modular\Console\Commands\DataMakeCommand;
 use Hatchyu\Modular\Console\Commands\DtoMakeCommand;
+use Hatchyu\Modular\Console\Commands\EnumMakeCommand;
+use Hatchyu\Modular\Console\Commands\EventMakeCommand;
+use Hatchyu\Modular\Console\Commands\JobMakeCommand;
+use Hatchyu\Modular\Console\Commands\MailMakeCommand;
 use Hatchyu\Modular\Console\Commands\MigrationMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModelMakeCommand;
 use Hatchyu\Modular\Console\Commands\ModuleCacheCommand;
+use Hatchyu\Modular\Console\Commands\ModuleCheckCommand;
 use Hatchyu\Modular\Console\Commands\ModuleClearCommand;
 use Hatchyu\Modular\Console\Commands\ModuleListCommand;
 use Hatchyu\Modular\Console\Commands\ModuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\ModuleSeedCommand;
+use Hatchyu\Modular\Console\Commands\NotificationMakeCommand;
+use Hatchyu\Modular\Console\Commands\ObserverMakeCommand;
+use Hatchyu\Modular\Console\Commands\PolicyMakeCommand;
 use Hatchyu\Modular\Console\Commands\QueryMakeCommand;
 use Hatchyu\Modular\Console\Commands\RequestMakeCommand;
 use Hatchyu\Modular\Console\Commands\ResourceMakeCommand;
+use Hatchyu\Modular\Console\Commands\RuleMakeCommand;
+use Hatchyu\Modular\Console\Commands\SeederMakeCommand;
+use Hatchyu\Modular\Console\Commands\ServiceMakeCommand;
+use Hatchyu\Modular\Console\Commands\TestMakeCommand;
+use Hatchyu\Modular\Console\Commands\ValueObjectMakeCommand;
+use Hatchyu\Modular\Discovery\CommandRegistrar;
 use Hatchyu\Modular\Discovery\ConfigRegistrar;
 use Hatchyu\Modular\Discovery\FactoryGuesser;
 use Hatchyu\Modular\Discovery\MigrationRegistrar;
 use Hatchyu\Modular\Discovery\ModuleRegistry;
+use Hatchyu\Modular\Discovery\PolicyGuesser;
 use Hatchyu\Modular\Discovery\ProviderRegistrar;
 use Hatchyu\Modular\Discovery\RouteRegistrar;
 use Hatchyu\Modular\Discovery\ViewRegistrar;
@@ -36,13 +55,21 @@ class ModularServiceProvider extends ServiceProvider
             return new ModuleRegistry($app->make(ConfigRepository::class));
         });
 
-        // Register module service providers early in the registration lifecycle
         /** @var ConfigRepository $config */
         $config = $this->app->make(ConfigRepository::class);
 
+        /** @var ModuleRegistry $registry */
+        $registry = $this->app->make(ModuleRegistry::class);
+
+        // 1. Auto-discover Module Configs early during registration
+        if ((bool) $config->get('modular.autodiscover.configs', true)) {
+            (new ConfigRegistrar($config, $this->app))->register($registry);
+        }
+
+        // 2. Register module service providers early in the registration lifecycle
         if ((bool) $config->get('modular.autodiscover.providers', true)) {
             $providerRegistrar = new ProviderRegistrar($this->app);
-            $providerRegistrar->register($this->app->make(ModuleRegistry::class));
+            $providerRegistrar->register($registry);
         }
     }
 
@@ -68,15 +95,43 @@ class ModularServiceProvider extends ServiceProvider
                 ActionMakeCommand::class,
                 QueryMakeCommand::class,
                 DtoMakeCommand::class,
+                DataMakeCommand::class,
                 ControllerMakeCommand::class,
                 RequestMakeCommand::class,
                 ResourceMakeCommand::class,
                 ModelMakeCommand::class,
+                PolicyMakeCommand::class,
+                ObserverMakeCommand::class,
+                EnumMakeCommand::class,
+                EventMakeCommand::class,
+                JobMakeCommand::class,
+                MailMakeCommand::class,
+                NotificationMakeCommand::class,
+                RuleMakeCommand::class,
+                ContractMakeCommand::class,
+                ValueObjectMakeCommand::class,
+                ServiceMakeCommand::class,
+                CommandMakeCommand::class,
+                SeederMakeCommand::class,
+                ModuleSeedCommand::class,
+                TestMakeCommand::class,
                 MigrationMakeCommand::class,
                 ModuleListCommand::class,
+                ModuleCheckCommand::class,
                 ModuleCacheCommand::class,
                 ModuleClearCommand::class,
             ]);
+
+            // Auto-discover Module Console Commands
+            if ((bool) $config->get('modular.autodiscover.commands', true)) {
+                (new CommandRegistrar($this->app))->register($registry);
+            }
+
+            $this->optimizes(
+                optimize: 'module:cache',
+                clear: 'module:clear',
+                key: 'modular'
+            );
         }
 
         // Auto-discover Model Factories
@@ -84,9 +139,14 @@ class ModularServiceProvider extends ServiceProvider
             (new FactoryGuesser())->register($registry->getNamespace());
         }
 
+        // Auto-discover Authorization Policies
+        if ((bool) $config->get('modular.autodiscover.policies', true)) {
+            (new PolicyGuesser())->register($registry->getNamespace());
+        }
+
         // Auto-discover Module Routes
         if ((bool) $config->get('modular.autodiscover.routes', true)) {
-            (new RouteRegistrar($this->app->make('router'), $config))->register($registry);
+            (new RouteRegistrar($this->app->make('router'), $config, $this->app))->register($registry);
         }
 
         // Auto-discover Module Migrations
@@ -97,11 +157,6 @@ class ModularServiceProvider extends ServiceProvider
         // Auto-discover Module Views
         if ((bool) $config->get('modular.autodiscover.views', true) && $this->app->bound('view')) {
             (new ViewRegistrar($this->app->make('view')))->register($registry);
-        }
-
-        // Auto-discover Module Configs
-        if ((bool) $config->get('modular.autodiscover.configs', true)) {
-            (new ConfigRegistrar($config))->register($registry);
         }
     }
 }

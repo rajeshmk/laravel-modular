@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{namespace}}\{{module}}\Controllers\Api\V1;
+namespace {{namespace}}\{{module}}\Interface\Controllers\Api\{{version}}{{subNamespace}};
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +13,15 @@ class {{class}}
     {
         return response()->json([
             'data' => [],
+        ]);
+    }
+
+    public function show(int|string $id): JsonResponse
+    {
+        return response()->json([
+            'data' => [
+                'id' => $id,
+            ],
         ]);
     }
 }

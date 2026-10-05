@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\ValueObjects{{subNamespace}};
+
+final readonly class {{class}}
+{
+    public function __construct(
+        // Define immutable value object properties
+    ) {}
+
+    public function equals(self $other): bool
+    {
+        return $this == $other;
+    }
+}

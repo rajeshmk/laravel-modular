@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Hatchyu\Modular\Console\Commands;
 
 use Hatchyu\Modular\Console\GeneratorCommand;
-use Illuminate\Support\Str;
 
 class DtoMakeCommand extends GeneratorCommand
 {
     protected $signature = 'module:make-dto
                             {module : The name of the module}
-                            {name : The name of the DTO class (e.g. OrderData or CreateOrderDto)}';
+                            {name : The name of the DTO/Data class (e.g. OrderData or V1/OrderData)}
+                            {--force : Overwrite the file if it already exists}';
 
-    protected $description = 'Create a new Readonly DTO class inside a module';
+    protected $description = 'Create a new Data/DTO class inside Application/Data of a module';
 
     public function handle(): int
     {
@@ -21,20 +21,23 @@ class DtoMakeCommand extends GeneratorCommand
 
         /** @var string $rawName */
         $rawName = $this->argument('name');
-        $className = Str::studly($rawName);
+        [$className, $subNamespace, $relativeDir] = $this->parseClassInput($rawName);
 
-        $filePath = $module->getPath("DTOs/{$className}.php");
+        $subPath = $relativeDir !== '' ? $relativeDir . '/' . $className : $className;
+        $filePath = $module->getPath("Application/Data/{$subPath}.php");
 
         $replacements = [
             'namespace' => rtrim($this->registry->getNamespace(), '\\'),
             'module' => $module->getName(),
             'class' => $className,
+            'subNamespace' => $subNamespace !== '' ? '\\' . $subNamespace : '',
         ];
 
-        $content = $this->replacePlaceholders($this->getStub('dto'), $replacements);
+        $content = $this->replacePlaceholders($this->getStub('data'), $replacements);
+        $force = (bool) $this->option('force');
 
-        if ($this->writeFile($filePath, $content)) {
-            $this->components->info("DTO [{$className}] created successfully at [{$filePath}].");
+        if ($this->writeFile($filePath, $content, $force)) {
+            $this->components->info("Data/DTO [{$className}] created successfully at [{$filePath}].");
 
             return self::SUCCESS;
         }

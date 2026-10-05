@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Domain\Contracts{{subNamespace}};
+
+interface {{class}}
+{
+    // Define public contract methods
+}

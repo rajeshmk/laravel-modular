@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}}\{{module}}\Infrastructure\Notifications{{subNamespace}};
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+
+class {{class}} extends Notification
+{
+    use Queueable;
+
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function via(mixed $notifiable): array
+    {
+        return ['mail'];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(mixed $notifiable): array
+    {
+        return [];
+    }
+}

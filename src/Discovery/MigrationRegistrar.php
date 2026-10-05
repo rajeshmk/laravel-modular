@@ -19,13 +19,15 @@ final readonly class MigrationRegistrar
         /** @var Module $module */
         foreach ($registry->all() as $module) {
             if ($module->hasMigrations()) {
+                $path = $module->getMigrationsPath();
+
                 /* @phpstan-ignore-next-line */
                 if (method_exists($this->app, 'loadMigrationsFrom')) {
-                    $this->app->loadMigrationsFrom($module->getMigrationsPath());
+                    $this->app->loadMigrationsFrom($path);
                 } elseif ($this->app->bound('migrator')) {
                     /** @var Migrator $migrator */
                     $migrator = $this->app->make('migrator');
-                    $migrator->path($module->getMigrationsPath());
+                    $migrator->path($path);
                 }
             }
         }

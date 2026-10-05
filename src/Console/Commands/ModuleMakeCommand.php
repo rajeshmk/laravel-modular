@@ -14,12 +14,19 @@ class ModuleMakeCommand extends GeneratorCommand
                             {name : The name of the module (e.g. Order, Customer, Agent)}
                             {--force : Overwrite existing module files}';
 
-    protected $description = 'Scaffold a new domain module conforming to the Modular Monolith blueprint';
+    protected $description = 'Scaffold a new domain module conforming to the DDD 4-layer architecture';
 
     public function handle(): int
     {
         /** @var string $rawName */
         $rawName = $this->argument('name');
+
+        if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $rawName) !== 1) {
+            $this->components->error("Invalid module name [{$rawName}]. Module names must begin with a letter and contain only alphanumeric characters, underscores, or hyphens.");
+
+            return self::FAILURE;
+        }
+
         $moduleName = Str::studly($rawName);
         $force = (bool) $this->option('force');
 
@@ -39,28 +46,47 @@ class ModuleMakeCommand extends GeneratorCommand
         $this->components->info("Scaffolding module [{$moduleName}]...");
 
         $directories = [
-            'Actions',
-            'Queries/Filters',
-            'Queries/Searches',
-            'Controllers/Api/V1',
-            'Controllers/Admin',
-            'Requests',
-            'Resources',
-            'Models',
-            'Exceptions',
-            'Contracts',
-            'DTOs',
-            'Enums',
-            'Events',
-            'Listeners',
-            'Middleware',
-            'Jobs',
-            'Console',
-            'config',
-            'database/migrations',
-            'database/factories',
-            'resources/views',
+            // 1. Domain Layer
+            'Domain/Models',
+            'Domain/Contracts',
+            'Domain/ValueObjects',
+            'Domain/Enums',
+            'Domain/Events',
+            'Domain/Policies',
+            'Domain/Observers',
+
+            // 2. Application Layer
+            'Application/Actions',
+            'Application/Queries',
+            'Application/Data',
+            'Application/Services',
+            'Application/Rules',
+
+            // 3. Interface Layer
+            'Interface/Controllers/Api/V1',
+            'Interface/Controllers/Admin',
+            'Interface/Requests',
+            'Interface/Resources',
+            'Interface/Console/Commands',
+
+            // 4. Infrastructure Layer
+            'Infrastructure/Jobs',
+            'Infrastructure/Mails',
+            'Infrastructure/Notifications',
+
+            // 5. Database Layer
+            'Database/Migrations',
+            'Database/Factories',
+            'Database/Seeders',
+
+            // 6. Tests
+            'tests/Feature',
+            'tests/Unit',
+
+            // 7. Routes, Config & Views
             'routes',
+            'config',
+            'resources/views',
         ];
 
         foreach ($directories as $dir) {
@@ -93,27 +119,37 @@ class ModuleMakeCommand extends GeneratorCommand
         $viewContent = "<div>\n    <h1>Welcome to {$moduleName} Module</h1>\n</div>\n";
         $this->writeFile($module->getPath('resources/views/index.blade.php'), $viewContent, $force);
 
-        // 6. Gitkeep empty directories
+        // 6. Initial Database Seeder
+        $seederContent = $this->replacePlaceholders($this->getStub('seeder.database'), $replacements);
+        $this->writeFile($module->getPath("Database/Seeders/{$moduleName}DatabaseSeeder.php"), $seederContent, $force);
+
+        // 7. Gitkeep empty directories
         $emptyDirs = [
-            'Actions',
-            'Queries/Filters',
-            'Queries/Searches',
-            'Controllers/Api/V1',
-            'Controllers/Admin',
-            'Requests',
-            'Resources',
-            'Models',
-            'Exceptions',
-            'Contracts',
-            'DTOs',
-            'Enums',
-            'Events',
-            'Listeners',
-            'Middleware',
-            'Jobs',
-            'Console',
-            'database/migrations',
-            'database/factories',
+            'Domain/Models',
+            'Domain/Contracts',
+            'Domain/ValueObjects',
+            'Domain/Enums',
+            'Domain/Events',
+            'Domain/Policies',
+            'Domain/Observers',
+            'Application/Actions',
+            'Application/Queries',
+            'Application/Data',
+            'Application/Services',
+            'Application/Rules',
+            'Interface/Controllers/Api/V1',
+            'Interface/Controllers/Admin',
+            'Interface/Requests',
+            'Interface/Resources',
+            'Interface/Console/Commands',
+            'Infrastructure/Jobs',
+            'Infrastructure/Mails',
+            'Infrastructure/Notifications',
+            'Database/Migrations',
+            'Database/Factories',
+            'Database/Seeders',
+            'tests/Feature',
+            'tests/Unit',
         ];
 
         foreach ($emptyDirs as $dir) {
@@ -133,5 +169,18 @@ class ModuleMakeCommand extends GeneratorCommand
         ]);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'name' => [
+                'What is the name of the module?',
+                'e.g. Order, Customer, Billing',
+            ],
+        ];
     }
 }

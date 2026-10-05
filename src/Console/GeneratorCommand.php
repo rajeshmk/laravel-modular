@@ -7,15 +7,36 @@ namespace Hatchyu\Modular\Console;
 use Hatchyu\Modular\Discovery\ModuleRegistry;
 use Hatchyu\Modular\Support\Module;
 use Illuminate\Console\Command;
+use Illuminate\Console\Concerns\PromptsForMissingInput as PromptsTrait;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 
-abstract class GeneratorCommand extends Command
+abstract class GeneratorCommand extends Command implements PromptsForMissingInput
 {
+    use PromptsTrait;
+
     public function __construct(
         protected readonly ModuleRegistry $registry
     ) {
         parent::__construct();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'module' => [
+                'Which module does this belong to?',
+                'e.g. ' . ($this->registry->all()->first()?->getName() ?? 'Customer'),
+            ],
+            'name' => [
+                'What should this class be named?',
+                'e.g. ' . class_basename($this::class),
+            ],
+        ];
     }
 
     protected function getModule(): Module
@@ -37,10 +58,53 @@ abstract class GeneratorCommand extends Command
         );
     }
 
+    /**
+     * Parse class input and split into class name, sub-namespace, and relative directory path.
+     * Prevents path traversal vulnerabilities by validating and sanitizing each segment.
+     *
+     * @return array{0: string, 1: string, 2: string} [className, subNamespace, relativeDir]
+     */
+    protected function parseClassInput(string $input): array
+    {
+        $normalized = str_replace(['/', '\\'], '/', trim($input, '/\\'));
+        $parts = explode('/', $normalized);
+
+        $cleanParts = [];
+        foreach ($parts as $part) {
+            $trimmed = trim($part);
+            if ($trimmed === '' || $trimmed === '.' || $trimmed === '..') {
+                continue;
+            }
+
+            // Strip any character not alphanumeric or underscore
+            $sanitized = preg_replace('/[^a-zA-Z0-9_]/', '', $trimmed);
+            if ($sanitized !== null && $sanitized !== '') {
+                $cleanParts[] = $sanitized;
+            }
+        }
+
+        if (empty($cleanParts)) {
+            $cleanParts = ['Model'];
+        }
+
+        $rawClass = array_pop($cleanParts);
+        $className = Str::studly((string) $rawClass);
+
+        $studlyParts = array_map([Str::class, 'studly'], $cleanParts);
+        $subNamespace = implode('\\', $studlyParts);
+        $relativeDir = implode(DIRECTORY_SEPARATOR, $studlyParts);
+
+        return [$className, $subNamespace, $relativeDir];
+    }
+
     protected function getStub(string $stubName): string
     {
         /** @var string|null $customPath */
         $customPath = config('modular.stubs_path');
+
+        if ($customPath === null && is_dir(base_path('stubs/modular'))) {
+            $customPath = base_path('stubs/modular');
+        }
 
         if ($customPath !== null && file_exists("{$customPath}/{$stubName}.stub")) {
             $content = file_get_contents("{$customPath}/{$stubName}.stub");
@@ -86,7 +150,7 @@ abstract class GeneratorCommand extends Command
     protected function writeFile(string $path, string $content, bool $force = false): bool
     {
         if (file_exists($path) && ! $force) {
-            $this->components->warn("File [{$path}] already exists.");
+            $this->components->warn("File [{$path}] already exists. Use --force to overwrite.");
 
             return false;
         }
